@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Kalinga - Screening Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kalinga-primary': '#b425aa',
+                        'kalinga-accent': '#c80ec9',
+                        'kalinga-gold': '#D4AF37',
+                        'low-risk': '#4ADE80',    /* Green */
+                        'moderate-risk': '#FBBF24', /* Yellow */
+                        'high-risk': '#EF4444',   /* Red */
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #f0f4f8; 
+        }
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .option-button {
+            transition: background-color 0.2s;
+        }
+        .option-button:hover:not(.selected) {
+            background-color: #f3f4f6;
+        }
+        .selected {
+            background-color: #c80ec9 !important; /* kalinga-accent */
+            color: white !important;
+            border-color: #b425aa;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header & Navigation -->
+    <header class="bg-kalinga-primary shadow-xl sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            
+            <!-- Logo/Title -->
+            <div class="flex items-center">
+                <img src="https://appimize.app/assets/apps/user_1097/images/b2e254093bca_935_1097.png" alt="Kalinga Connect Logo" class="h-8 w-8 rounded-full mr-2">
+                <h1 class="text-xl font-extrabold text-white">Kalinga Connect</h1>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex space-x-4">
+                <a href="index.html" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Home
+                </a>
+                <!-- SCREENING is active -->
+                <a href="screening.html" class="nav-button text-kalinga-gold hover:text-white font-semibold transition duration-150">
+                    Screening
+                </a>
+                <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Locator
+                </a>
+                <a href="support.html" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Support
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 flex justify-center">
+        
+        <div class="w-full max-w-2xl">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-2xl border-t-8 border-kalinga-accent">
+                
+                <h2 class="text-3xl font-extrabold text-kalinga-primary mb-3 text-center">
+                    Substance Abuse Vulnerability Screener
+                </h2>
+                <p class="text-gray-600 mb-6 text-center border-b pb-4">
+                    This confidential tool helps assess potential risk factors. Answer honestly for the most accurate result.
+                </p>
+
+                <!-- Screening Questions Form -->
+                <div id="screening-form" class="space-y-6">
+                    <!-- Question 1: Cut Down -->
+                    <div class="question-card bg-gray-50 p-4 rounded-lg shadow-inner">
+                        <p class="font-semibold text-gray-800 mb-3">1. Have you ever felt you ought to **Cut down** on your use of substances?</p>
+                        <div class="flex space-x-4">
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="1" data-score="0">No</button>
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="1" data-score="1">Yes</button>
+                        </div>
+                    </div>
+
+                    <!-- Question 2: Annoyed -->
+                    <div class="question-card bg-gray-50 p-4 rounded-lg shadow-inner">
+                        <p class="font-semibold text-gray-800 mb-3">2. Have people **Annoyed** you by criticizing your use of substances?</p>
+                        <div class="flex space-x-4">
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="2" data-score="0">No</button>
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="2" data-score="1">Yes</button>
+                        </div>
+                    </div>
+
+                    <!-- Question 3: Guilty -->
+                    <div class="question-card bg-gray-50 p-4 rounded-lg shadow-inner">
+                        <p class="font-semibold text-gray-800 mb-3">3. Have you ever felt bad or **Guilty** about your use of substances?</p>
+                        <div class="flex space-x-4">
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="3" data-score="0">No</button>
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="3" data-score="1">Yes</button>
+                        </div>
+                    </div>
+
+                    <!-- Question 4: Eye-opener -->
+                    <div class="question-card bg-gray-50 p-4 rounded-lg shadow-inner">
+                        <p class="font-semibold text-gray-800 mb-3">4. Have you ever needed a substance first thing in the morning (**Eye-opener**) to steady your nerves or get rid of a hangover?</p>
+                        <div class="flex space-x-4">
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="4" data-score="0">No</button>
+                            <button class="option-button flex-1 py-2 border border-gray-300 rounded-lg text-sm" data-q="4" data-score="1">Yes</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button id="submit-button" onclick="calculateScore()" disabled
+                    class="mt-8 w-full py-3 bg-gray-400 text-white font-bold rounded-xl shadow-md transition duration-300 disabled:opacity-50 hover:bg-kalinga-accent">
+                    Submit and View Results
+                </button>
+
+                <!-- Results Section -->
+                <div id="results-section" class="mt-8 p-6 hidden rounded-xl shadow-inner border-l-4">
+                    <h3 class="text-2xl font-bold mb-4 text-center">Your Screening Results</h3>
+                    
+                    <div class="text-center mb-4">
+                        <span id="score-display" class="inline-block text-5xl font-extrabold text-gray-800"></span>
+                        <p class="text-lg text-gray-600">Total Score (0 - 4)</p>
+                    </div>
+
+                    <div id="risk-level-container" class="p-3 rounded-lg text-center mb-6">
+                        <p class="text-lg font-bold">Vulnerability Level: <span id="risk-level" class="font-extrabold"></span></p>
+                    </div>
+
+                    <p id="recommendation-text" class="text-gray-700 mb-4"></p>
+
+                    <div class="mt-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                        <a href="https://cognitioplus.github.io/kalinga-connect/ai.html" class="flex-1 py-3 text-center text-white bg-kalinga-primary rounded-lg font-semibold hover:bg-kalinga-accent transition duration-300">
+                            Talk to Kalinga AI Chat
+                        </a>
+                        <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="flex-1 py-3 text-center border border-kalinga-primary text-kalinga-primary rounded-lg font-semibold hover:bg-kalinga-primary hover:text-white transition duration-300">
+                            Find a Treatment Center
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Legal/Disclaimer -->
+                <p class="text-xs text-gray-400 mt-6 text-center">
+                    <span class="font-bold">Disclaimer:</span> This is a self-assessment tool and is not a substitute for professional medical or psychological diagnosis.
+                </p>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const scores = {}; // To store the score for each question
+        const totalQuestions = 4;
+        const submitButton = document.getElementById('submit-button');
+        const resultsSection = document.getElementById('results-section');
+        const riskLevelContainer = document.getElementById('risk-level-container');
+        const riskLevelDisplay = document.getElementById('risk-level');
+        const scoreDisplay = document.getElementById('score-display');
+        const recommendationText = document.getElementById('recommendation-text');
+
+        // Event listener for all option buttons
+        document.querySelectorAll('.option-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const questionId = this.dataset.q;
+                const score = parseInt(this.dataset.score, 10);
+
+                // 1. Store the score
+                scores[questionId] = score;
+
+                // 2. Manage UI state (select button, deselect others in group)
+                document.querySelectorAll(`.option-button[data-q="${questionId}"]`).forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                this.classList.add('selected');
+
+                // 3. Check if all questions are answered
+                checkCompletion();
+            });
+        });
+
+        /**
+         * Checks if all questions have been answered and enables the submit button.
+         */
+        function checkCompletion() {
+            if (Object.keys(scores).length === totalQuestions) {
+                submitButton.disabled = false;
+                submitButton.classList.add('bg-kalinga-accent');
+                submitButton.classList.remove('bg-gray-400');
+            } else {
+                submitButton.disabled = true;
+                submitButton.classList.remove('bg-kalinga-accent');
+                submitButton.classList.add('bg-gray-400');
+            }
+        }
+
+        /**
+         * Calculates the total score and displays the result and recommendation.
+         */
+        window.calculateScore = function() {
+            if (Object.keys(scores).length !== totalQuestions) {
+                // This shouldn't happen if checkCompletion works, but good for safety
+                return;
+            }
+
+            let totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+
+            // Determine risk level based on score (0-4 scale)
+            let riskLevel = '';
+            let colorClass = '';
+            let recommendation = '';
+
+            if (totalScore >= 2) {
+                riskLevel = 'High Vulnerability';
+                colorClass = 'bg-high-risk';
+                recommendation = `Your score of ${totalScore} suggests a potentially significant level of substance use vulnerability. We strongly recommend you speak confidentially with a professional. Kalinga Connect can help you access resources immediately.`;
+            } else if (totalScore === 1) {
+                riskLevel = 'Moderate Vulnerability';
+                colorClass = 'bg-moderate-risk';
+                recommendation = `Your score of ${totalScore} suggests moderate vulnerability. It may be helpful to reflect on the reasons behind your 'Yes' answer. Consider talking to the Kalinga AI Chat for support strategies.`;
+            } else { // totalScore === 0
+                riskLevel = 'Low Vulnerability';
+                colorClass = 'bg-low-risk';
+                recommendation = `Your score of ${totalScore} suggests a low level of current vulnerability. This is excellent! Continue to practice healthy coping skills and use Kalinga Connect's tools for progress tracking and well-being maintenance.`;
+            }
+
+            // Update Results UI
+            scoreDisplay.textContent = totalScore;
+            riskLevelDisplay.textContent = riskLevel;
+            riskLevelContainer.className = `p-3 rounded-lg text-center mb-6 text-white ${colorClass}`;
+            recommendationText.textContent = recommendation;
+            
+            // Show results and hide form
+            resultsSection.classList.remove('hidden');
+            document.getElementById('screening-form').scrollIntoView({ behavior: 'smooth' }); // Scroll to results
+        }
+        
+    </script>
+</body>
+</html>
