@@ -1,915 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalinga Connect by Cognitio+</title>
-    <!-- Load Tailwind CSS -->
+    <meta charset="UTF-8" />
+    <title>Kalinga Connect PWA - Substance Abuse Support</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Custom Fonts -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap');
-        
-        /* Define custom colors and fonts */
-        :root {
-            --primary-color: #b425aa; /* Deep Magenta/Purple */
-            --secondary-color: #c80ec9; /* Brighter Magenta */
-            --accent-color: #FFD700; /* Gold/Yellow for contrast */
-            --heading-font: 'Poppins', sans-serif;
-            --body-font: 'Roboto Condensed', sans-serif;
-        }
-
-        body {
-            font-family: var(--body-font);
-            background-color: #f4f7f9;
-        }
-        .heading-font {
-            font-family: var(--heading-font);
-        }
-        
-        /* Custom progress bar styling for screening tool */
-        progress[value]::-webkit-progress-bar {
-            background-color: #e5e7eb;
-            border-radius: 9999px;
-        }
-        progress[value]::-webkit-progress-value {
-            background-color: var(--primary-color);
-            border-radius: 9999px;
-        }
-        progress[value]::-moz-progress-bar {
-            background-color: var(--primary-color);
-        }
-        
-        /* Map container styling */
-        #map-container {
-            width: 100%;
-            min-height: 450px;
-            border-radius: 0.75rem;
-        }
-    </style>
-
-    <!-- Lucide Icons (Inline SVG replacement for icons) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-</head>
-<body class="min-h-screen">
-
-    <!-- Script for Firebase Initialization and App Logic -->
-    <script type="module">
-        // --- Global Constants and Branding ---
-        const BRAND_PRIMARY_COLOR = '#b425aa';
-        const BRAND_SECONDARY_COLOR = '#c80ec9';
-        const BRAND_ACCENT_COLOR = '#FFD700';
-        const APP_NAME = 'Kalinga Connect by Cognitio+';
-        const LOGO_URL = 'https://appimize.app/assets/apps/user_1097/images/b2e254093bca_935_1097.png';
-        const GMAPS_API_KEY = ""; // Canvas environment will inject this key
-        const PROCEDURES_IMAGE_URL_1 = 'https://ddb.gov.ph/wp-content/uploads/2025/09/p1.1-scaled.jpg';
-        const PROCEDURES_IMAGE_URL_2 = 'https://ddb.gov.ph/wp-content/uploads/2025/09/p1.2-scaled.jpg';
-        const COUNSELING_LINK = 'https://cognitioplus.aiwaapp.live/online-counseling';
-        const HOME_EXTERNAL_LINK = 'https://cognitioplus.aiwaapp.live/home/';
-
-
-        // --- DOH-Accredited Treatment and Rehab Center (DATRC) Data (from PDF) ---
-        const DATRC_DATA = [
-            { id: 1, name: "ROADS AND BRIDGES TO RECOVERY", address: "520 EDBEN Bldg. Dr. Sixto Antonio Ave., Maybunga, Pasig City", region: "NCR", city: "Pasig City", contact: "(02) 8643-6056 loc. 112.113 & 103", modality: "Therapeutic Community", type: "NGO", lat: 14.5768, lng: 121.0858, email: "rbrcenter@yahoo.com" },
-            { id: 2, name: "MHW INCORPORATED (new)", address: "28 Maria Basa, Pacdal, Baguio City", region: "CAR", city: "Baguio City", contact: "074-3094290/0919-0009188", modality: "Eclectic", type: "NGO", lat: 16.4172, lng: 120.6133, email: "" },
-            { id: 3, name: "DOH-DRUG ABUSE TREATMENT AND REHABILITATION CENTER (Isabela)", address: "Centro, Brgy. San Antonio, Ilagan, Isabela", region: "Region II", city: "Ilagan City", contact: "0908-8134084/0975-2762650/0917-1528202", modality: "Therapeutic Community", type: "GO", lat: 17.15, lng: 121.84, email: "trc_dohro2@yahoo.com.ph" },
-            { id: 4, name: "DOH-TREATMENT AND REHABILITATION CENTER BATAAN", address: "Batangas III, Brgy. Liyang, Pilar, Bataan", region: "Region III", city: "Pilar", contact: "0999-5190930", modality: "Therapeutic Community", type: "GO", lat: 14.68, lng: 120.57, email: "" },
-            { id: 5, name: "Cebu Recovery Home", address: "Cebu City, Cebu (Mock Private)", region: "Region VII", city: "Cebu City", contact: "(032) 231-7000", modality: "Hazelden-Minnesota", type: "Private", lat: 10.3157, lng: 123.8854, email: "ceburecovery@example.com" },
-            { id: 6, name: "Mindanao Hope Center", address: "Davao City, Davao del Sur (Mock Private)", region: "Region XI", city: "Davao City", contact: "(082) 221-9000", modality: "Spiritual Approach", type: "Private", lat: 7.0722, lng: 125.6131, email: "mindanaohope@example.com" },
-            { id: 7, name: "DOH-TRC Tagaytay", address: "Tagaytay City, Cavite", region: "Region IV-A", city: "Tagaytay City", contact: "(046) 413-0282", modality: "Multidisciplinary", type: "GO", lat: 14.1030, lng: 120.9388, email: "" },
-        ];
-
-        // --- Enhanced Substance Abuse Vulnerability Screening (e-SAVS) Questions ---
-        const E_SAVS_QUESTIONS = [
-            { id: 1, text: "How often have you used drugs or substances (excluding prescribed medications) in the last 12 months?", options: ["Never", "Monthly or less", "2-4 times a month", "Weekly or more"], scores: [0, 1, 2, 3] },
-            { id: 2, text: "Have you failed to meet major role obligations at work, school, or home because of substance use?", options: ["No", "Yes, once or twice", "Yes, regularly"], scores: [0, 3, 6] },
-            { id: 3, text: "Have you ever used a substance in situations where it was physically hazardous (e.g., driving, operating machinery)?", options: ["No", "Yes"], scores: [0, 5] },
-            { id: 4, text: "Have family, friends, or health workers expressed concern about your substance use, or have you had related legal troubles?", options: ["No", "Yes"], scores: [0, 5] },
-            { id: 5, text: "Have you often wished to cut down, control your use, or felt a strong craving (intense urge) for the substance?", options: ["Never", "Sometimes", "Often"], scores: [0, 2, 4] },
-        ];
-
-
-        // --- Firebase Initialization and Authentication ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // setLogLevel('debug'); // Uncomment to see Firebase logs
-
-        let db, auth, currentUserId = null;
-        let isAuthReady = false;
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        function updateFooterStatus(status) {
-            const footerElement = document.getElementById('auth-status');
-            if (footerElement) {
-                footerElement.textContent = status;
-            }
-        }
-
-        try {
-            if (Object.keys(firebaseConfig).length > 0) {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        updateFooterStatus(`Ready (User ID: ${currentUserId.substring(0, 8)}...)`);
-                    } else {
-                        // This fallback should rarely run if custom token is provided
-                        updateFooterStatus('Authentication Error or Anonymous Sign-in Required');
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kalinga-primary': '#b425aa',
+                        'kalinga-accent': '#c80ec9',
+                        'kalinga-gold': '#D4AF37',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
                     }
-                    isAuthReady = true;
-                    // Initial rendering after auth is ready
-                    if(document.readyState === 'complete') renderPage(window.activeTab || 'Home');
-                });
-
-                if (initialAuthToken) {
-                    signInWithCustomToken(auth, initialAuthToken).catch(e => {
-                        console.error("Firebase Custom Auth Error, falling back to anonymous:", e);
-                        signInAnonymously(auth).catch(e => console.error("Firebase Anonymous Auth Error:", e));
-                    });
-                } else if (!auth.currentUser) {
-                    signInAnonymously(auth).catch(e => console.error("Firebase Anonymous Auth Error:", e));
                 }
-                updateFooterStatus('Initializing...');
-            } else {
-                console.warn("Firebase config is missing. App will run without persistent storage.");
-                isAuthReady = true;
-                currentUserId = 'anonymous-' + Math.random().toString(36).substring(2, 9);
-                updateFooterStatus('Ready (No Persistence)');
-                if(document.readyState === 'complete') renderPage(window.activeTab || 'Home');
             }
-        } catch (error) {
-            console.error("Failed to initialize Firebase:", error);
-            updateFooterStatus('Initialization Failed');
         }
-        
-        // --- State Management ---
-        window.activeTab = 'Home';
-        window.isMenuOpen = false;
-        window.savsAnswers = {};
-        window.savsStep = 0; // 0: Start, 1-N: Questions, N+1: Result
-        window.isSubmitting = false;
-        window.isMapLoaded = false;
-        window.mapInstance = null;
-        window.currentMarkers = [];
-        window.searchTerm = '';
-        window.filterRegion = 'All';
-        window.filterModality = 'All';
-        window.filterType = 'All';
+    </script>
+    
+    <style>
+        body {
+            background-color: #f0f4f8; /* Light gray background */
+        }
+        .chat-message {
+            max-width: 80%;
+            border-radius: 1.5rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .user-message {
+            background-color: #e2e8f0; /* Light slate */
+            color: #1e293b; /* Dark text */
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .bot-message {
+            background-color: #b425aa; /* kalinga-primary */
+            color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+        }
+        /* Loading animation dots */
+        @keyframes dot-flashing {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        .loading-dot {
+            animation: dot-flashing 1.5s infinite alternate;
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin: 0 1px;
+            border-radius: 50%;
+            background-color: white;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.5s; }
+        .loading-dot:nth-child(3) { animation-delay: 1s; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
 
+    <!-- Header & Navigation -->
+    <header class="bg-kalinga-primary shadow-xl sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            
+            <!-- Logo/Title -->
+            <div class="flex items-center">
+                <img src="https://appimize.app/assets/apps/user_1097/images/b2e254093bca_935_1097.png" alt="Kalinga Connect Logo" class="h-8 w-8 rounded-full mr-2">
+                <h1 class="text-xl font-extrabold text-white">Kalinga Connect</h1>
+            </div>
 
-        // --- Utility Functions ---
-        // Expose critical functions to the global scope for inline HTML event handlers
-        window.setActiveTab = setActiveTab;
-        window.toggleMenu = toggleMenu;
-        window.handleSavsAnswer = handleSavsAnswer;
-        window.submitSavsResult = submitSavsResult;
-        window.resetScreening = resetScreening;
-        window.updateMarkers = updateMarkers;
+            <!-- Navigation Links -->
+            <nav class="flex space-x-4">
+                <button onclick="navigate('home')" id="nav-home" class="nav-button text-kalinga-gold hover:text-white font-semibold transition duration-150">
+                    Home
+                </button>
+                <!-- LOCATOR LINK: Header Navigation -->
+                <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Locator
+                </a>
+                <!-- SUPPORT BUTTON: Calls navigate('support') -->
+                <button onclick="navigate('support')" id="nav-support" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Support
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
         
-        function setIcon(element, name, className = 'w-5 h-5') {
-            element.innerHTML = lucide.createIcons()[name].toSvg({ class: className });
+        <!-- Home View -->
+        <div id="view-home" class="view-content">
+            <div class="bg-white p-8 md:p-12 rounded-xl shadow-2xl border-t-8 border-kalinga-accent text-center">
+                <h2 class="text-4xl md:text-5xl font-extrabold text-kalinga-primary mb-4">Welcome to Kalinga Connect</h2>
+                <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Your personal digital companion for substance abuse recovery. Find accredited centers, track your progress, and get supportive guidance informed by professional behavioral models.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <!-- LOCATOR LINK: Central Button -->
+                    <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="
+                        inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl shadow-lg 
+                        text-white bg-kalinga-accent hover:bg-kalinga-primary transition duration-300 transform hover:scale-105
+                        focus:outline-none focus:ring-4 focus:ring-kalinga-accent focus:ring-opacity-50">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.606-10.606L13.414 3.1a1.998 1.998 0 00-2.828 0l-4.243 4.243m10.606 10.606l4.243-4.243a1.998 1.998 0 000-2.828l-4.243-4.243m-10.606 10.606L3.1 13.414a1.998 1.998 0 010-2.828l4.243-4.243m10.606 10.606a4 4 0 11-5.656-5.656 4 4 0 015.656 5.656z"></path></svg>
+                        View Accredited Locator
+                    </a>
+                    <!-- SUPPORT BUTTON: Calls navigate('support') -->
+                    <button onclick="navigate('support')" class="
+                        inline-flex items-center justify-center px-8 py-3 border border-kalinga-primary text-base font-medium rounded-xl shadow-lg 
+                        text-kalinga-primary bg-white hover:bg-kalinga-primary hover:text-white transition duration-300 transform hover:scale-105
+                        focus:outline-none focus:ring-4 focus:ring-kalinga-primary focus:ring-opacity-50">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9.228a2 2 0 012.828 0l.135.135a.5.5 0 00.354.147H14a1 1 0 011 1v2a1 1 0 01-1 1h-1.583a.5.5 0 00-.354.147l-.135.135a2 2 0 01-2.828 0 2 2 0 010-2.828zM12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
+                        Talk to Kalinga AI Chat
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recovery Tools Section -->
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- NEW: Substance Abuse Screener -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-accent">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Substance Abuse Screener</h3>
+                    <p class="text-gray-600">A quick, validated tool to assess potential risk and guide next steps for support.</p>
+                </div>
+                
+                <!-- Existing Tools -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Progress Tracker</h3>
+                    <p class="text-gray-600">Log your daily mood, triggers, and accomplishments to visualize your recovery journey.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Coping Strategies</h3>
+                    <p class="text-gray-600">Access a library of quick, research-backed techniques to manage cravings and stress.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold">
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Community Connection</h3>
+                    <p class="text-gray-600">Connect with peers and share experiences in a safe, moderated environment (future feature).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support View (Kalinga AI Chatbot) -->
+        <div id="view-support" class="view-content hidden h-full max-w-3xl mx-auto">
+            <div class="bg-white rounded-xl shadow-2xl flex flex-col h-[80vh] min-h-[500px]">
+                
+                <!-- Chat Header -->
+                <div class="p-4 bg-kalinga-primary rounded-t-xl flex items-center justify-center">
+                    <h2 class="text-xl font-bold text-white">Kalinga AI Chat</h2>
+                    <!-- Framework Tag -->
+                    <span class="text-kalinga-gold text-sm ml-3 border border-kalinga-gold px-2 py-0.5 rounded-full">CBT & Behavior Design Expert</span>
+                </div>
+                
+                <!-- Chat Window -->
+                <div id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-4">
+                    <!-- Initial Bot Message -->
+                    <div class="flex">
+                        <div class="bot-message text-sm">
+                            Hello! I'm Kalinga AI Chat, an empathetic coach ready to support your recovery journey using techniques from CBT, NLP, and Behavior Design. What's on your mind today?
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 border-t border-gray-200 flex space-x-3">
+                    <input type="text" id="chat-input" placeholder="Ask for coping strategies or share your thoughts..."
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-kalinga-accent focus:border-kalinga-accent transition duration-150"
+                        onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button id="send-button" onclick="sendMessage()"
+                        class="px-5 py-2 bg-kalinga-accent text-white font-semibold rounded-lg shadow-md hover:bg-kalinga-primary transition duration-300 disabled:opacity-50"
+                        disabled>
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- Navigation Logic ---
+        let currentView = 'home';
+
+        /**
+         * Switches the active content view.
+         * @param {string} view - 'home' or 'support'
+         */
+        function navigate(view) {
+            currentView = view;
+            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${view}`).classList.remove('hidden');
+
+            // Handle active state in navigation bar
+            document.querySelectorAll('.nav-button').forEach(el => el.classList.remove('text-kalinga-gold'));
+            document.querySelectorAll('.nav-button').forEach(el => el.classList.add('text-white'));
+            if (document.getElementById(`nav-${view}`)) {
+                document.getElementById(`nav-${view}`).classList.add('text-kalinga-gold');
+                document.getElementById(`nav-${view}`).classList.remove('text-white');
+            }
+            // Ensure the chat input state is checked when navigated to
+            if (view === 'support') {
+                checkInput();
+            }
+        }
+
+        // Initialize view to home
+        document.addEventListener('DOMContentLoaded', () => {
+            navigate('home');
+        });
+
+        // --- Chatbot Logic (Gemini API Integration) ---
+        
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const apiKey = ""; // API Key is provided by the environment
+        const modelName = 'gemini-2.5-flash-preview-09-2025';
+
+        // --- START OF AI CHAT SYSTEM PROMPT (CBT, NLP, Behavior Design) ---
+        const systemPrompt = `You are Kalinga AI Chat, a supportive, highly empathetic, and professional mental health coach specializing in Substance Use Recovery, operating within the Kalinga Connect PWA. Your expertise covers the Philippine context.
+Your responses must be informed by these advanced behavioral frameworks:
+1. **Cognitive Behavioral Therapy (CBT):** Focus on identifying, examining, and challenging negative or unhelpful thought patterns (cognitions). Use gentle, Socratic questioning to guide the user towards alternative, balanced perspectives. (e.g., "What evidence supports that feeling?", "What's an alternative, kinder way to view this situation?").
+2. **Neuro-Linguistic Programming (NLP):** Use empowering, solution-focused language. Help users re-frame challenges into positive goals and acknowledge their internal resources for change.
+3. **Behavior Design Model (Tiny Habits/Fogg):** Encourage users to focus on small, specific, and manageable steps. Responses should guide the user to identify "Tiny Habits" that can be easily started and consistently maintained to build long-term success. (e.g., "What is the smallest, easiest step you can take right now to move forward?").
+
+**CRITICAL SAFETY WARNING:** **DO NOT** provide medical diagnosis, emergency services, or psychiatric treatment. For any mention of crisis, self-harm, or immediate danger, you MUST issue a strong safety notice recommending immediate, in-person help and providing a mock emergency number (e.g., 911 or a local crisis hotline).
+
+For all other issues, keep responses empathetic, action-oriented, focused on recovery, well-being, and developing coping skills. Your tone must be warm, encouraging, and non-judgemental.`;
+        // --- END OF AI CHAT SYSTEM PROMPT ---
+
+        /**
+         * Creates a new chat message element.
+         * @param {string} text - The message text.
+         * @param {string} sender - 'user' or 'bot'.
+         */
+        function appendMessage(text, sender) {
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `chat-message ${sender}-message text-white ${sender === 'user' ? 'bg-blue-600' : 'bg-kalinga-primary'}`;
+            // Use marked.js for bot responses (text formatting)
+            messageBubble.innerHTML = sender === 'bot' ? marked.parse(text) : text;
+            
+            messageContainer.appendChild(messageBubble);
+            chatWindow.appendChild(messageContainer);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return messageBubble;
         }
 
         /**
-         * Core function to change the active tab and re-render the page content.
-         * All major navigation buttons call this function.
+         * Shows the bot's loading indicator.
+         * @returns {HTMLElement} The loading indicator element.
          */
-        function setActiveTab(tab) {
-            window.activeTab = tab;
-            window.isMenuOpen = false;
-            renderPage(tab);
+        function showLoading() {
+            const loadingContainer = document.createElement('div');
+            loadingContainer.className = 'flex justify-start';
+            loadingContainer.id = 'loading-indicator';
+            loadingContainer.innerHTML = `
+                <div class="bot-message bg-kalinga-accent">
+                    <span class="loading-dot"></span>
+                    <span class="loading-dot"></span>
+                    <span class="loading-dot"></span>
+                </div>`;
+            chatWindow.appendChild(loadingContainer);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return loadingContainer;
         }
 
-        function toggleMenu() {
-            window.isMenuOpen = !window.isMenuOpen;
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu) {
-                mobileMenu.classList.toggle('hidden', !window.isMenuOpen);
-            }
-            // Force re-rendering of the header to update the icon
-            const appHeader = document.getElementById('app-header');
-            if (appHeader) {
-                appHeader.innerHTML = renderHeader();
-                lucide.createIcons(); // Re-render icons
-            }
-        }
-
-        // --- e-SAVS Logic ---
-        function calculateScore() {
-            let totalScore = 0;
-            Object.values(window.savsAnswers).forEach(answer => {
-                totalScore += answer.score || 0;
-            });
-            return totalScore;
-        }
-
-        function getSavsResult(score) {
-            if (score >= 15) {
-                return { level: "High Risk - Possible Dependence", color: "text-red-600", guidance: "Urgent need for professional Drug Dependency Examination (DDE). Contact a DOH-accredited physician immediately." };
-            } else if (score >= 8) {
-                return { level: "Moderate Risk - Harmful Use", color: "text-orange-600", guidance: "Strongly advised to seek a clinical assessment and counseling. Use the Locator to find a nearby center." };
-            } else if (score >= 3) {
-                return { level: "Low Risk - At Risk Use", color: "text-yellow-600", guidance: "Monitor your use closely. Consider counseling or health promotion programs to prevent escalation." };
-            } else {
-                return { level: "Minimal Risk", color: "text-green-600", guidance: "Your responses indicate minimal risk. Maintain healthy coping mechanisms and access resources for prevention." };
+        /**
+         * Hides the bot's loading indicator.
+         */
+        function hideLoading() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
             }
         }
 
         /**
-         * Handles the selection of an answer, stores it, and advances to the next step.
+         * The core function to call the Gemini API with exponential backoff.
+         * @param {number} retries - Current retry count.
          */
-        async function handleSavsAnswer(questionId, optionIndex) {
-            const question = E_SAVS_QUESTIONS.find(q => q.id === questionId);
-            if (!question) return;
+        async function callGeminiApi(userQuery, retries = 0) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            const maxRetries = 5;
+            const delay = Math.pow(2, retries) * 1000 + (Math.random() * 1000); // Exponential backoff with jitter
 
-            window.savsAnswers = {
-                ...window.savsAnswers,
-                [questionId]: {
-                    question: question.text,
-                    answer: question.options[optionIndex],
-                    score: question.scores[optionIndex],
-                }
-            };
-            window.savsStep = window.savsStep + 1;
-            renderPage('Screening');
-        }
-        
-        /**
-         * Calculates the final score and attempts to save the result to Firestore.
-         */
-        async function submitSavsResult() {
-            if (!db || !currentUserId || window.isSubmitting) return;
-
-            window.isSubmitting = true;
-            const score = calculateScore();
-            const result = getSavsResult(score);
-
-            const screeningData = {
-                appId,
-                userId: currentUserId,
-                timestamp: serverTimestamp(),
-                totalScore: score,
-                riskLevel: result.level,
-                answers: window.savsAnswers,
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                tools: [{ "google_search": {} }], // Use Google Search for grounding and up-to-date info
             };
 
             try {
-                // Private data path: /artifacts/{appId}/users/{userId}/screenings
-                const collectionPath = `artifacts/${appId}/users/${currentUserId}/screenings`;
-                await addDoc(collection(db, collectionPath), screeningData);
-                console.log("Screening result saved successfully to:", collectionPath);
-                window.savsStep = E_SAVS_QUESTIONS.length + 1; // Show result page
-            } catch (error) {
-                console.error("Error saving screening result to Firestore:", error);
-                window.savsStep = E_SAVS_QUESTIONS.length + 1; // Show result page even if save fails
-            } finally {
-                window.isSubmitting = false;
-                renderPage('Screening');
-            }
-        }
-        
-        /**
-         * Resets the screening state to start over.
-         */
-        function resetScreening() {
-            window.savsAnswers = {};
-            window.savsStep = 0;
-            window.isSubmitting = false;
-            renderPage('Screening');
-        }
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-
-        // --- Locator Logic ---
-        function getFilteredRehabs() {
-            let results = DATRC_DATA;
-
-            if (window.searchTerm) {
-                const term = window.searchTerm.toLowerCase();
-                results = results.filter(r =>
-                    r.name.toLowerCase().includes(term) ||
-                    r.address.toLowerCase().includes(term) ||
-                    r.city.toLowerCase().includes(term)
-                );
-            }
-
-            if (window.filterRegion !== 'All') {
-                results = results.filter(r => r.region === window.filterRegion);
-            }
-
-            if (window.filterModality !== 'All') {
-                results = results.filter(r => r.modality === window.filterModality);
-            }
-
-            if (window.filterType !== 'All') {
-                results = results.filter(r => r.type === window.filterType);
-            }
-
-            return results;
-        }
-
-        function getUniqueValues(key) {
-            return ['All', ...new Set(DATRC_DATA.map(r => r[key]))].sort();
-        }
-
-        // --- Google Maps Logic ---
-        window.initializeMap = function() {
-            if (typeof google === 'undefined' || !document.getElementById('map-container')) {
-                return;
-            }
-
-            const initialCenter = { lat: 12.8797, lng: 121.7740 };
-            window.mapInstance = new google.maps.Map(document.getElementById('map-container'), {
-                center: initialCenter,
-                zoom: 6,
-                minZoom: 6,
-                maxZoom: 15,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false,
-            });
-
-            window.isMapLoaded = true;
-            updateMarkers();
-        }
-
-        function updateMarkers() {
-            if (!window.mapInstance) return;
-
-            // Clear existing markers
-            window.currentMarkers.forEach(marker => marker.setMap(null));
-            window.currentMarkers = [];
-            
-            const infoWindow = new google.maps.InfoWindow();
-            const filteredRehabs = getFilteredRehabs();
-
-            filteredRehabs.forEach(center => {
-                const marker = new google.maps.Marker({
-                    position: { lat: center.lat, lng: center.lng },
-                    map: window.mapInstance,
-                    title: center.name,
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        fillColor: center.type === 'GO' ? BRAND_PRIMARY_COLOR : BRAND_SECONDARY_COLOR,
-                        fillOpacity: 0.9,
-                        scale: 8,
-                        strokeWeight: 0,
+                if (!response.ok) {
+                    if (response.status === 429 && retries < maxRetries) {
+                        // Rate limit error, retry after delay
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return callGeminiApi(userQuery, retries + 1);
                     }
-                });
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
 
-                const content = `
-                    <div style="padding: 10px; max-width: 250px; font-family: var(--body-font);">
-                        <h4 style="font-weight: bold; margin: 0 0 5px 0; color: ${BRAND_PRIMARY_COLOR};">${center.name}</h4>
-                        <p style="margin: 0;"><strong>Address:</strong> ${center.address}</p>
-                        <p style="margin: 0;"><strong>Contact:</strong> <a href="tel:${center.contact.replace(/\D/g, '')}" style="color: ${BRAND_SECONDARY_COLOR}; text-decoration: none;">${center.contact}</a></p>
-                        <p style="margin: 0;"><strong>Modality:</strong> ${center.modality}</p>
-                        <p style="margin: 0;"><strong>Type:</strong> <span style="font-weight: bold;">${center.type}</span></p>
-                    </div>
-                `;
-
-                marker.addListener('click', () => {
-                    infoWindow.setContent(content);
-                    infoWindow.open(window.mapInstance, marker);
-                });
+                const result = await response.json();
                 
-                window.currentMarkers.push(marker);
-            });
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response. Please try again.";
+                
+                // Extract grounding sources (citations)
+                let sourcesHtml = '';
+                const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
+                if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                    const sources = groundingMetadata.groundingAttributions
+                        .map(attr => attr.web)
+                        .filter(web => web && web.uri && web.title);
 
-            // Adjust map bounds if markers are present
-            if (filteredRehabs.length > 0) {
-                const bounds = new google.maps.LatLngBounds();
-                filteredRehabs.forEach(center => bounds.extend({ lat: center.lat, lng: center.lng }));
-                window.mapInstance.fitBounds(bounds);
-            } else if (window.mapInstance) {
-                // If no results, center the map on the Philippines
-                window.mapInstance.setCenter({ lat: 12.8797, lng: 121.7740 });
-                window.mapInstance.setZoom(6);
+                    if (sources.length > 0) {
+                        sourcesHtml = '<div class="mt-3 pt-2 border-t border-kalinga-accent text-xs opacity-80">';
+                        sourcesHtml += '<p class="font-bold mb-1">Sources:</p><ul class="list-disc ml-4">';
+                        sources.slice(0, 3).forEach(source => { // Limit to top 3 sources
+                            sourcesHtml += `<li><a href="${source.uri}" target="_blank" class="hover:underline">${source.title}</a></li>`;
+                        });
+                        sourcesHtml += '</ul></div>';
+                    }
+                }
+
+                return { text, sourcesHtml };
+
+            } catch (error) {
+                if (retries < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return callGeminiApi(userQuery, retries + 1);
+                }
+                console.error("Final API call failure:", error);
+                return { text: "I apologize, an error occurred while connecting to the service. Please check your connection or try again later.", sourcesHtml: '' };
             }
         }
-        
-        // Function to load the Google Maps script
-        function loadGoogleMapsScript() {
-            if (window.isMapLoaded || document.getElementById('google-maps-script')) {
-                return;
-            }
-            const script = document.createElement('script');
-            script.id = 'google-maps-script';
-            // The callback function initializeMap is essential for the script to load correctly
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${GMAPS_API_KEY}&callback=initializeMap&libraries=places`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        }
 
-        // --- Page Rendering Functions ---
+        /**
+         * Sends the user message and gets a response from the AI.
+         */
+        async function sendMessage() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery) return;
 
-        function renderHeader() {
-            return `
-                <header class="fixed top-0 left-0 right-0 text-white shadow-lg z-50" style="background-color: ${BRAND_PRIMARY_COLOR};">
-                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div class="flex justify-between items-center h-16">
-                            <div class="flex-shrink-0 flex items-center">
-                                <img src="${LOGO_URL}" alt="${APP_NAME} Logo" class="h-8 w-8 mr-2 rounded-full shadow-lg" />
-                                <h1 class="text-xl font-extrabold heading-font">${APP_NAME}</h1>
-                            </div>
-                            <nav class="hidden md:flex space-x-4">
-                                ${['Home', 'Screening', 'Locator', 'Support'].map(name => {
-                                    const isActive = window.activeTab === name;
-                                    const buttonClasses = `px-3 py-2 rounded-md text-sm font-medium transition duration-150 heading-font ${isActive ? 'text-white shadow-inner' : 'text-gray-200 hover:text-white'}`;
-                                    const buttonStyle = `background-color: ${isActive ? BRAND_SECONDARY_COLOR : 'transparent'};`;
-                                    const icon = name === 'Home' ? 'home' : name === 'Screening' ? 'file-text' : name === 'Locator' ? 'map-pin' : 'headset';
+            // 1. Display user message and clear input
+            appendMessage(userQuery, 'user');
+            chatInput.value = '';
+            sendButton.disabled = true;
+
+            // 2. Show loading indicator
+            const loadingIndicator = showLoading();
+
+            // 3. Call the API
+            const { text, sourcesHtml } = await callGeminiApi(userQuery);
+
+            // 4. Hide loading and display bot response
+            hideLoading(loadingIndicator);
             
-                                    if (name === 'Home') {
-                                        // RENDER HOME AS EXTERNAL LINK
-                                        return `
-                                            <a
-                                                href="${HOME_EXTERNAL_LINK}"
-                                                target="_blank"
-                                                class="${buttonClasses}"
-                                                style="${buttonStyle}"
-                                            >
-                                                <span class="inline-block align-middle mr-1" data-lucide="${icon}"></span>
-                                                ${name}
-                                            </a>
-                                        `;
-                                    } else {
-                                        // RENDER OTHER TABS AS INTERNAL BUTTONS
-                                        return `
-                                            <button
-                                                onclick="window.setActiveTab('${name}')"
-                                                class="${buttonClasses}"
-                                                style="${buttonStyle}"
-                                            >
-                                                <span class="inline-block align-middle mr-1" data-lucide="${icon}"></span>
-                                                ${name}
-                                            </button>
-                                        `;
-                                    }
-                                }).join('')}
-                            </nav>
-                            <div class="md:hidden">
-                                <button
-                                    onclick="window.toggleMenu()"
-                                    class="inline-flex items-center justify-center p-2 rounded-md text-white hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white transition duration-150 ease-in-out"
-                                >
-                                    <span data-lucide="${window.isMenuOpen ? 'x' : 'menu'}" class="h-6 w-6"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Mobile Menu Dropdown -->
-                    <div id="mobile-menu" class="md:hidden ${window.isMenuOpen ? '' : 'hidden'}">
-                        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3" style="background-color: ${BRAND_PRIMARY_COLOR};">
-                            ${['Home', 'Screening', 'Locator', 'Support'].map(name => {
-                                const isActive = window.activeTab === name;
-                                const itemClasses = `block w-full text-left px-3 py-2 rounded-md text-base font-medium transition duration-150 heading-font ${isActive ? 'text-white' : 'text-gray-200 hover:text-white'}`;
-                                const itemStyle = `background-color: ${isActive ? BRAND_SECONDARY_COLOR : 'transparent'};`;
-                                const icon = name === 'Home' ? 'home' : name === 'Screening' ? 'file-text' : name === 'Locator' ? 'map-pin' : 'headset';
-                                
-                                if (name === 'Home') {
-                                    // RENDER HOME AS EXTERNAL LINK
-                                    return `
-                                        <a
-                                            href="${HOME_EXTERNAL_LINK}"
-                                            target="_blank"
-                                            class="${itemClasses} flex items-center"
-                                            style="${itemStyle}"
-                                        >
-                                            <span class="inline-block align-middle mr-2" data-lucide="${icon}"></span>
-                                            ${name}
-                                        </a>
-                                    `;
-                                } else {
-                                    // RENDER OTHER TABS AS INTERNAL BUTTONS
-                                    return `
-                                        <button
-                                            onclick="window.setActiveTab('${name}')"
-                                            class="${itemClasses}"
-                                            style="${itemStyle}"
-                                        >
-                                            <span class="inline-block align-middle mr-2" data-lucide="${icon}"></span>
-                                            ${name}
-                                        </button>
-                                    `;
-                                }
-                            }).join('')}
-                            <p class="text-xs p-2 truncate" style="color: #DDD;">User ID: ${currentUserId || 'Loading...'}</p>
-                        </div>
-                    </div>
-                </header>
-            `;
+            // Append the response text and sources
+            const botMessageBubble = appendMessage(text, 'bot');
+            botMessageBubble.innerHTML = botMessageBubble.innerHTML + sourcesHtml;
+
+            sendButton.disabled = false;
         }
 
-        function renderHomePage() {
-             return `
-                <div class="p-6 space-y-8 bg-white shadow-xl rounded-lg">
-                    <h2 class="text-3xl font-bold text-gray-800 border-b-2 pb-2 heading-font" style="border-bottom-color: ${BRAND_PRIMARY_COLOR};">
-                        Welcome to ${APP_NAME}
-                    </h2>
-                    <p class="text-gray-600">
-                        Your dynamic and intuitive platform for accessing essential substance abuse services and resources in the Philippines, aligned with R.A. 9165 and DDB mandates. We focus exclusively on the health, treatment, and rehabilitation dimension.
-                    </p>
-
-                    <div class="grid md:grid-cols-3 gap-6">
-                        ${[
-                            { title: "Start Screening", description: "Take the confidential e-SAVS tool for an immediate risk assessment.", action: "Go to Screening", tab: 'Screening', icon: 'file-text' },
-                            { title: "Find a Center", description: "Locate DOH-accredited Treatment & Rehab Centers (DATRCs) on a map.", action: "View Locator", tab: 'Locator', icon: 'map-pin' },
-                            { title: "Immediate Help", description: "Get essential contact information for crises and petition procedures.", action: "View Support", tab: 'Support', icon: 'headset' },
-                        ].map(card => `
-                            <div class="bg-gray-50 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 flex flex-col justify-between border-t-4" style="border-top-color: ${BRAND_PRIMARY_COLOR};">
-                                <div>
-                                    <span class="h-8 w-8 text-white p-1.5 rounded-full mb-3 inline-block" style="background-color: ${BRAND_PRIMARY_COLOR};" data-lucide="${card.icon}"></span>
-                                    <h3 class="text-xl font-semibold text-gray-800 mb-2 heading-font">${card.title}</h3>
-                                    <p class="text-sm text-gray-500 mb-4">${card.description}</p>
-                                </div>
-                                <button
-                                    onclick="window.setActiveTab('${card.tab}')"
-                                    class="text-white font-bold py-2 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 mt-4 heading-font"
-                                    style="background-color: ${BRAND_SECONDARY_COLOR};"
-                                >
-                                    ${card.action}
-                                </button>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="mt-8 p-4 border-l-4 rounded-md" style="background-color: #FEEEEE; border-color: #E53E3E; color: #9B2C2C;">
-                        <h3 class="font-bold heading-font">Important Policy Disclaimer (R.A. 9165)</h3>
-                        <p class="text-sm">
-                            The information and screening results provided here are for guidance only and do not constitute a medical diagnosis. Formal treatment admission (especially compulsory confinement) requires a Drug Dependency Examination (DDE) by a DOH-accredited physician, along with other legal clearances (RTC/MTC Clearance), pursuant to the Comprehensive Dangerous Drugs Act of 2002. Always consult a legal or medical professional.
-                        </p>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function renderScreeningPage() {
-            const currentQuestion = E_SAVS_QUESTIONS[window.savsStep - 1];
-            const score = calculateScore();
-            const result = getSavsResult(score);
-
-            if (window.savsStep === 0) {
-                return `
-                    <div class="p-6 space-y-6 bg-white shadow-xl rounded-lg">
-                        <h2 class="text-3xl font-bold heading-font" style="color: ${BRAND_PRIMARY_COLOR};">Enhanced Substance Abuse Screening (e-SAVS)</h2>
-                        <p class="text-gray-600">
-                            This confidential screening uses clinically informed questions to estimate your risk level for harmful substance use and potential dependence.
-                        </p>
-                        <div class="p-4 border-l-4 rounded-md" style="background-color: #EEE; border-color: ${BRAND_PRIMARY_COLOR};">
-                            <p class="font-semibold" style="color: ${BRAND_PRIMARY_COLOR};">Confidentiality Note:</p>
-                            <p class="text-sm text-gray-600">Your results are stored securely using your unique, anonymous User ID: <span class="font-mono text-xs bg-gray-200 p-1 rounded">${currentUserId || 'Loading...'}</span></p>
-                        </div>
-                        <button
-                            onclick="window.savsStep = 1; window.renderPage('Screening')"
-                            class="w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition duration-300 shadow-lg heading-font"
-                            style="background-color: ${BRAND_SECONDARY_COLOR};"
-                        >
-                            Start Screening (${E_SAVS_QUESTIONS.length} Questions)
-                        </button>
-                    </div>
-                `;
-            }
-
-            if (window.savsStep <= E_SAVS_QUESTIONS.length) {
-                // Question Page
-                const question = E_SAVS_QUESTIONS[window.savsStep - 1];
-                const answered = window.savsAnswers[question.id] ? true : false;
-
-                return `
-                    <div class="p-6 space-y-8 bg-white shadow-xl rounded-lg min-h-[400px]">
-                        <h3 class="text-xl font-semibold text-gray-700 heading-font">
-                            Question ${window.savsStep} of ${E_SAVS_QUESTIONS.length}
-                        </h3>
-                        <!-- Progress bar value is dynamically set based on the current step -->
-                        <progress class="w-full h-2 rounded-full overflow-hidden bg-gray-200" value="${window.savsStep - 1}" max="${E_SAVS_QUESTIONS.length}"></progress>
-
-                        <p class="text-2xl font-bold text-gray-800 mb-6 heading-font">${question.text}</p>
-
-                        <div class="space-y-4">
-                            ${question.options.map((option, index) => {
-                                const isSelected = window.savsAnswers[question.id] && window.savsAnswers[question.id].answer === option;
-                                return `
-                                    <button
-                                        onclick="window.handleSavsAnswer(${question.id}, ${index})"
-                                        class="w-full text-left p-4 rounded-lg border-2 hover:opacity-90 transition duration-200 ${isSelected ? 'font-semibold border-4' : 'border-gray-300'}"
-                                        style="${isSelected ? `border-color: ${BRAND_PRIMARY_COLOR}; background-color: #F8F3FA; color: ${BRAND_PRIMARY_COLOR};` : ''}"
-                                    >
-                                        ${option}
-                                    </button>
-                                `;
-                            }).join('')}
-                        </div>
-
-                        ${window.savsStep === E_SAVS_QUESTIONS.length && answered ? `
-                            <!-- Finish button wired to submitSavsResult() -->
-                            <button
-                                onclick="window.submitSavsResult()"
-                                ${window.isSubmitting ? 'disabled' : ''}
-                                class="w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition duration-300 shadow-lg disabled:opacity-50 mt-8 heading-font"
-                                style="background-color: ${BRAND_SECONDARY_COLOR};"
-                            >
-                                ${window.isSubmitting ? 'Saving Results...' : 'Finish & View Results'}
-                            </button>
-                        ` : ''}
-                    </div>
-                `;
-            }
-
-            // Result Page
-            return `
-                <div class="p-6 space-y-6 bg-white shadow-xl rounded-lg">
-                    <h2 class="text-3xl font-bold heading-font" style="color: ${BRAND_PRIMARY_COLOR};">Screening Complete!</h2>
-                    <div class="p-6 rounded-xl shadow-inner border-t-8 bg-green-50" style="border-top-color: ${BRAND_ACCENT_COLOR}; background-color: #FFFBEA;">
-                        <p class="text-xl font-semibold text-gray-700 heading-font">Your Total Score:</p>
-                        <p class="text-6xl font-extrabold ${result.color}">${score}</p>
-                    </div>
-
-                    <div class="p-6 space-y-4 border-l-4 rounded-md" style="border-color: ${BRAND_PRIMARY_COLOR}; background-color: #F8F3FA;">
-                        <h3 class="text-2xl font-bold heading-font" style="color: ${BRAND_PRIMARY_COLOR};">Risk Assessment: <span class="${result.color}">${result.level}</span></h3>
-                        <p class="text-gray-700">${result.guidance}</p>
-                        <!-- Button wired to switch to Locator tab -->
-                        <button
-                            onclick="window.setActiveTab('Locator')"
-                            class="text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 transition duration-300 mt-4 flex items-center heading-font"
-                            style="background-color: ${BRAND_SECONDARY_COLOR};"
-                        >
-                            <span data-lucide="map-pin" class="h-5 w-5 mr-2"></span> Find a DATRC Now
-                        </button>
-                    </div>
-
-                    <h3 class="text-xl font-semibold text-gray-700 pt-4 border-t heading-font">Next Steps:</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-600">
-                        <li>For high-risk results, seek a Drug Dependency Examination (DDE) for formal diagnosis.</li>
-                        <li>Use the Locator tab to find DOH-accredited centers near you.</li>
-                        <li>Review the Support tab for legal petition procedures if compulsory confinement is considered.</li>
-                    </ul>
-
-                    <!-- Button wired to resetScreening() -->
-                    <button
-                        onclick="window.resetScreening()"
-                        class="text-gray-500 hover:text-gray-700 transition duration-300 mt-4 text-sm"
-                    >
-                        Retake Screening
-                    </button>
-                </div>
-            `;
-        }
-
-        function renderLocatorPage() {
-            const filteredRehabs = getFilteredRehabs();
-            const uniqueRegions = getUniqueValues('region');
-            const uniqueModalities = getUniqueValues('modality');
-            const uniqueTypes = getUniqueValues('type');
-            
-            // This function is run AFTER the page content is rendered to handle map initialization
-            if (window.activeTab === 'Locator' && !window.isMapLoaded) {
-                 loadGoogleMapsScript();
-            } else if (window.mapInstance) {
-                // If map is already loaded, update markers immediately
-                setTimeout(updateMarkers, 0); 
-            }
-            
-            const renderFilters = () => {
-                const SelectFilter = (value, options, defaultLabel) => {
-                    return `
-                        <select
-                            onchange="window.${value} = this.value; window.renderPage('Locator');"
-                            class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-4 focus:ring-opacity-50 w-full"
-                            style="--tw-ring-color: ${BRAND_PRIMARY_COLOR};"
-                        >
-                            <option value="All">${defaultLabel}</option>
-                            ${options.filter(o => o !== 'All').map(o => `<option value="${o}" ${window[value] === o ? 'selected' : ''}>${o}</option>`).join('')}
-                        </select>
-                    `;
-                };
-
-                return `
-                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Input wired to update searchTerm and re-render Locator -->
-                        <input
-                            type="text"
-                            placeholder="Search by Name, City, or Region..."
-                            class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-4 focus:ring-opacity-50 col-span-full lg:col-span-1"
-                            style="--tw-ring-color: ${BRAND_PRIMARY_COLOR};"
-                            value="${window.searchTerm}"
-                            oninput="window.searchTerm = this.value; window.renderPage('Locator');"
-                        />
-                        <!-- Selects wired to update filter state and re-render Locator -->
-                        ${SelectFilter('filterRegion', uniqueRegions, 'Filter by Region')}
-                        ${SelectFilter('filterModality', uniqueModalities, 'Filter by Modality')}
-                        ${SelectFilter('filterType', uniqueTypes, 'Filter by Type')}
-                    </div>
-                `;
-            };
-
-
-            return `
-                <div class="p-6 space-y-6 bg-white shadow-xl rounded-lg">
-                    <h2 class="text-3xl font-bold heading-font" style="color: ${BRAND_PRIMARY_COLOR};">DOH-Accredited Treatment & Rehab Center (DATRC) Locator</h2>
-
-                    <!-- Map Container -->
-                    <div id="map-container" class="rounded-xl shadow-lg border-4 border-gray-200 bg-gray-100 flex items-center justify-center">
-                       ${!window.isMapLoaded ? `
-                          <p class="text-gray-500 font-semibold flex items-center">
-                            <span data-lucide="clock" class="animate-spin h-5 w-5 mr-3"></span> Loading Map...
-                          </p>` : ''}
-                    </div>
-
-                    ${renderFilters()}
-                    
-                    <div class="p-2 text-sm font-semibold text-gray-600">
-                        Showing <span style="color: ${BRAND_PRIMARY_COLOR};">${filteredRehabs.length}</span> out of ${DATRC_DATA.length} accredited centers.
-                    </div>
-
-                    <div class="space-y-3 max-h-96 overflow-y-auto p-1 pr-3">
-                        ${filteredRehabs.length > 0 ? filteredRehabs.map(center => `
-                            <div key="${center.id}" class="bg-gray-50 p-4 rounded-xl shadow-md border-l-4" style="border-color: ${BRAND_PRIMARY_COLOR};">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-800 heading-font">${center.name}</h3>
-                                        <p class="text-sm text-gray-500 flex items-center mt-1">
-                                            <span data-lucide="map-pin" class="h-4 w-4 mr-1"></span> ${center.address}, ${center.region}
-                                        </p>
-                                    </div>
-                                    <span class="font-medium px-2 py-0.5 rounded-full text-xs ${center.type === 'GO' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}">${center.type}</span>
-                                </div>
-                                <div class="pt-4 mt-4 border-t border-gray-200 space-y-2 text-sm">
-                                    <div class="flex justify-between text-gray-700">
-                                        <span class="font-semibold flex items-center"><span data-lucide="phone" class="h-4 w-4 mr-1"></span> Contact:</span>
-                                        <!-- Phone link wired via href="tel:..." -->
-                                        <a href="tel:${center.contact.replace(/\D/g, '')}" class="hover:underline font-bold" style="color: ${BRAND_SECONDARY_COLOR};">${center.contact}</a>
-                                    </div>
-                                    <div class="flex justify-between text-gray-700">
-                                        <span class="font-semibold">Modality:</span>
-                                        <span>${center.modality}</span>
-                                    </div>
-                                    ${center.email ? `
-                                        <div class="flex justify-between text-gray-700">
-                                            <span class="font-semibold flex items-center"><span data-lucide="mail" class="h-4 w-4 mr-1"></span> Email:</span>
-                                            <!-- Email link wired via href="mailto:..." -->
-                                            <a href="mailto:${center.email}" class="hover:underline font-bold text-blue-500">${center.email}</a>
-                                        </div>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `).join('') : `
-                            <div class="text-center p-10 bg-gray-100 rounded-lg text-gray-500">
-                                No centers found matching your criteria. Try adjusting the filters.
-                            </div>
-                        `}
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderSupportPage() {
-            return `
-                <div class="p-6 space-y-6 bg-white shadow-xl rounded-lg">
-                    <h2 class="text-3xl font-bold heading-font" style="color: #E53E3E;">Emergency, Crisis, & Treatment Petition Support</h2>
-                    <p class="text-gray-600">
-                        If you or someone you know is experiencing a mental health crisis, please call these hotlines immediately.
-                    </p>
-
-                    <div class="space-y-4">
-                        ${[
-                            { title: "DOH Substance Abuse Helpline", number: "(02) 8989-6472 (HOPE)", description: "The Department of Health's dedicated line for substance abuse concerns and referrals.", color: '#FEEEEE', borderColor: '#E53E3E', icon: 'headset' },
-                            { title: "National Crisis Hotline", number: "1553 (Luzon, Visayas, Mindanao)", description: "Available 24/7 for all mental health and crisis intervention needs (formerly NCMH Crisis Hotline).", color: '#FFFBEA', borderColor: BRAND_ACCENT_COLOR, icon: 'headset' }
-                        ].map(card => `
-                            <div class="p-5 rounded-xl shadow-lg border-l-8 flex items-start" style="background-color: ${card.color}; border-color: ${card.borderColor};">
-                                <span data-lucide="${card.icon}" class="h-8 w-8 text-gray-700 mr-4 flex-shrink-0"></span>
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-800 heading-font">${card.title}</h3>
-                                    <!-- Crisis Hotline links wired via href="tel:..." -->
-                                    <a href="tel:${card.number.replace(/\D/g, '')}" class="text-2xl font-extrabold text-red-600 hover:text-red-800 transition duration-150">${card.number}</a>
-                                    <p class="text-sm text-gray-600 mt-1">${card.description}</p>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="pt-6 border-t mt-6">
-                        <h3 class="text-2xl font-bold heading-font mb-4" style="color: ${BRAND_PRIMARY_COLOR};">
-                            Procedures in Availing Petition for Treatment and Rehabilitation (R.A. 9165)
-                        </h3>
-                        <p class="text-gray-600 mb-4">
-                            The following chart illustrates the steps required to file a Petition for Compulsory Confinement and Treatment with the Regional Trial Court (RTC).
-                        </p>
-                        
-                        <!-- DDB Procedure Image 1 -->
-                        <div class="flex justify-center items-center p-4 bg-gray-100 rounded-xl shadow-inner mb-6">
-                           <img 
-                              src="${PROCEDURES_IMAGE_URL_1}" 
-                              alt="Procedure in Availing Petition for Treatment and Rehabilitation (Part 1)" 
-                              class="w-full h-auto max-w-4xl rounded-lg shadow-md"
-                              onerror="this.onerror=null; this.src='https://placehold.co/800x400/9b2c2c/ffffff?text=Petition+Procedure+Image+1+Unavailable';"
-                           />
-                           <p class="text-sm text-gray-500 mt-2 text-center">Source: Dangerous Drugs Board (DDB). Part 1 of 2.</p>
-                        </div>
-                        
-                         <!-- DDB Procedure Image 2 -->
-                        <div class="flex justify-center items-center p-4 bg-gray-100 rounded-xl shadow-inner mb-6">
-                           <img 
-                              src="${PROCEDURES_IMAGE_URL_2}" 
-                              alt="Procedure in Availing Petition for Treatment and Rehabilitation (Part 2)" 
-                              class="w-full h-auto max-w-4xl rounded-lg shadow-md"
-                              onerror="this.onerror=null; this.src='https://placehold.co/800x400/9b2c2c/ffffff?text=Petition+Procedure+Image+2+Unavailable';"
-                           />
-                           <p class="text-sm text-gray-500 mt-2 text-center">Source: Dangerous Drugs Board (DDB). Part 2 of 2.</p>
-                        </div>
-
-                        <h3 class="text-xl font-medium text-gray-800 mb-3 mt-6 heading-font">Need Personalized Support?</h3>
-                        <!-- Online Counseling Button wired via href="tel:..." to an external link -->
-                        <a 
-                            href="${COUNSELING_LINK}" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            class="inline-block w-full sm:w-auto px-6 py-3 text-lg font-bold text-white bg-green-600 rounded-lg shadow-xl 
-                                   hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-[1.02] 
-                                   focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 text-center heading-font"
-                        >
-                            Book for Online Counseling Now
-                        </a>
-                    </div>
-
-                    <div class="mt-8 p-4 bg-gray-100 rounded-md">
-                        <h3 class="font-bold text-gray-700 heading-font">Treatment Modalities Explained</h3>
-                        <ul class="text-sm text-gray-600 mt-2 space-y-1 list-disc list-inside">
-                            <li><span class="font-semibold">Therapeutic Community (TC):</span> Highly structured, community-focused program emphasizing peer pressure, role modeling, and personal responsibility.</li>
-                            <li><span class="font-semibold">Hazelden-Minnesota Model:</span> Views addiction as a disease, incorporating the Twelve Steps, group therapy, and abstinence-based recovery.</li>
-                            <li><span class="font-semibold">Multidisciplinary Team:</span> Treatment involving a comprehensive team (psychiatrists, psychologists, social workers) for holistic patient care.</li>
-                            <li><span class="font-semibold">Eclectic/Spiritual:</span> An approach that combines various therapeutic techniques, often including faith-based or traditional healing principles.</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-        }
-
-
-        // --- Main Render Function ---
-        window.renderPage = function(tab) {
-            const appContent = document.getElementById('app-content');
-            const appHeader = document.getElementById('app-header');
-            
-            if (!appContent || !appHeader) {
-                console.error("Application containers not found.");
-                return;
-            }
-
-            appHeader.innerHTML = renderHeader();
-            
-            let contentHTML = '';
-            switch (tab) {
-                case 'Screening':
-                    contentHTML = renderScreeningPage();
-                    break;
-                case 'Locator':
-                    contentHTML = renderLocatorPage();
-                    break;
-                case 'Support':
-                    contentHTML = renderSupportPage();
-                    break;
-                case 'Home':
-                default:
-                    contentHTML = renderHomePage();
-                    break;
-            }
-
-            appContent.innerHTML = contentHTML;
-            
-            // Re-render icons after content update
-            lucide.createIcons();
-            
-            // Special logic for Locator tab to refresh map markers after content update
-            if (tab === 'Locator' && window.isMapLoaded && window.mapInstance) {
-                 updateMarkers();
+        // Input handler to enable/disable send button
+        function checkInput() {
+            if (currentView === 'support') {
+                sendButton.disabled = chatInput.value.trim() === '';
             }
         }
-        
-        // Initial load
-        window.onload = () => {
-             // Delay initial render slightly to ensure Firebase listener catches auth state
-             if(isAuthReady) {
-                window.renderPage(window.activeTab || 'Home');
-             }
-        };
+        chatInput.addEventListener('input', checkInput);
+
+        // --- Markdown Library (marked.js) for Bot Responses ---
+        // Basic marked library setup (for bot text formatting)
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+        document.head.appendChild(script);
 
     </script>
-
-    <div id="app-header">
-        <!-- Header will be rendered here -->
-    </div>
-
-    <main class="pt-20 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div id="app-content">
-            <div class="text-center p-10 text-gray-500">Loading Kalinga Connect...</div>
-        </div>
-    </main>
 </body>
 </html>
