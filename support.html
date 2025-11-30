@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support & Resources</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 10px;
+        }
+    </style>
+    <script type="module">
+        // --- Firebase Initialization (Required for robust Canvas apps) ---
+        // Although no database operations are required for this specific request,
+        // we include the basic structure for a functional web application environment.
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        let app, db, auth;
+
+        try {
+            if (Object.keys(firebaseConfig).length > 0) {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                if (initialAuthToken) {
+                    signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Firebase Custom Auth Error:", e));
+                } else {
+                    signInAnonymously(auth).catch(e => console.error("Firebase Anonymous Auth Error:", e));
+                }
+            } else {
+                console.warn("Firebase config is missing. Application will run without authentication/database features.");
+            }
+        } catch (error) {
+            console.error("Failed to initialize Firebase:", error);
+        }
+
+        // Global variable for user ID based on auth state
+        window.currentUserId = null;
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    window.currentUserId = user.uid;
+                    console.log("User authenticated:", user.uid);
+                } else {
+                    window.currentUserId = null;
+                    console.log("User signed out or anonymous.");
+                }
+            });
+        }
+    </script>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-10 p-6 bg-white shadow-lg rounded-xl">
+            <h1 class="text-4xl font-extrabold text-blue-800">Resources & Support Center</h1>
+            <p class="mt-2 text-gray-600">Find essential guides, procedures, and access to wellness services.</p>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="space-y-12">
+
+            <!-- Section 1: General Information -->
+            <section class="p-6 bg-white shadow-lg rounded-xl">
+                <h2 class="text-3xl font-semibold text-blue-700 border-b pb-3 mb-4">General Support & FAQs</h2>
+                <div class="text-gray-700 space-y-4">
+                    <p>Welcome to the support hub. Here you can find comprehensive information regarding treatment options, legal procedures, and mental health resources.</p>
+                    <ul class="list-disc pl-6 space-y-1">
+                        <li>Understanding the Rehabilitation Process</li>
+                        <li>Rights of Petitioners and Patients</li>
+                        <li>Financial Assistance Programs</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 2: Treatment Petition Procedures (Requested Section) -->
+            <section class="p-6 bg-white shadow-lg rounded-xl">
+                <h2 class="text-3xl font-semibold text-red-600 border-b pb-3 mb-4" id="petition-procedures">Treatment Petition Procedures</h2>
+                
+                <p class="text-gray-700 mb-6">
+                    This section outlines the step-by-step process for filing a petition for treatment and rehabilitation, as mandated by law. Please follow these guidelines carefully.
+                </p>
+
+                <!-- Requested Image -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-medium text-gray-800 mb-3">Petition Flowchart (Reference)</h3>
+                    <img 
+                        src="https://ddb.gov.ph/wp-content/uploads/2025/09/p1.2-scaled.jpg" 
+                        alt="Flowchart illustrating the steps of the Treatment Petition Procedures" 
+                        class="w-full h-auto rounded-lg shadow-md border-2 border-gray-200"
+                        onerror="this.onerror=null; this.src='https://placehold.co/800x450/3b82f6/ffffff?text=Image+Unavailable'; this.alt='Placeholder image for petition flowchart due to loading error';"
+                    >
+                    <p class="text-sm text-gray-500 mt-2 text-center">Source: Drug Dangerous Board (DDB)</p>
+                </div>
+
+                <div class="text-gray-700 space-y-4">
+                    <p>The procedures generally involve judicial assessment, medical examination, and securing a court order for mandatory treatment. Consult a legal expert for personalized advice.</p>
+                    
+                    <h3 class="text-xl font-medium text-gray-800 mb-3 mt-6">Need Personalized Support?</h3>
+                    <!-- Requested Button for Online Counseling -->
+                    <a 
+                        href="https://cognitioplus.aiwaapp.live/online-counseling" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="inline-block w-full sm:w-auto px-6 py-3 text-lg font-bold text-white bg-green-600 rounded-lg shadow-xl 
+                               hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-[1.02] 
+                               focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 text-center"
+                    >
+                        Book for Online Counseling Now
+                    </a>
+                </div>
+            </section>
+
+            <!-- Section 3: Contact Information -->
+            <section class="p-6 bg-white shadow-lg rounded-xl">
+                <h2 class="text-3xl font-semibold text-blue-700 border-b pb-3 mb-4">Contact Information</h2>
+                <div class="text-gray-700 space-y-4">
+                    <p>For urgent matters or direct inquiries, you may reach out to the following:</p>
+                    <dl class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl text-blue-500">&#9990;</span>
+                            <dt class="font-medium">Hotline:</dt>
+                            <dd>+63 2 8xxx-xxxx (Office Hours)</dd>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl text-blue-500">&#9993;</span>
+                            <dt class="font-medium">Email:</dt>
+                            <dd><a href="mailto:support@example.com" class="text-blue-500 hover:underline">support@example.com</a></dd>
+                        </div>
+                    </dl>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-sm text-gray-500 p-4">
+            &copy; 2025 Health & Wellness Support. All rights reserved.
+        </footer>
+    </div>
+
+</body>
+</html>
