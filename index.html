@@ -62,20 +62,21 @@
         const APP_NAME = 'Kalinga Connect by Cognitio+';
         const LOGO_URL = 'https://appimize.app/assets/apps/user_1097/images/b2e254093bca_935_1097.png';
         const GMAPS_API_KEY = ""; // Canvas environment will inject this key
-        const PROCEDURES_IMAGE_URL_1 = 'https://ddb.gov.ph/wp-content/uploads/2025/09/p1.1-scaled.jpg'; // Previously used image
-        const PROCEDURES_IMAGE_URL_2 = 'https://ddb.gov.ph/wp-content/uploads/2025/09/p1.2-scaled.jpg'; // New image
+        const PROCEDURES_IMAGE_URL_1 = 'https://ddb.gov.ph/wp-content/uploads/2025/09/p1.1-scaled.jpg';
+        const PROCEDURES_IMAGE_URL_2 = 'https://ddb.gov.ph/wp-content/uploads/2025/09/p1.2-scaled.jpg';
         const COUNSELING_LINK = 'https://cognitioplus.aiwaapp.live/online-counseling';
+        const HOME_EXTERNAL_LINK = 'https://cognitioplus.aiwaapp.live/home/';
 
 
         // --- DOH-Accredited Treatment and Rehab Center (DATRC) Data (from PDF) ---
         const DATRC_DATA = [
             { id: 1, name: "ROADS AND BRIDGES TO RECOVERY", address: "520 EDBEN Bldg. Dr. Sixto Antonio Ave., Maybunga, Pasig City", region: "NCR", city: "Pasig City", contact: "(02) 8643-6056 loc. 112.113 & 103", modality: "Therapeutic Community", type: "NGO", lat: 14.5768, lng: 121.0858, email: "rbrcenter@yahoo.com" },
             { id: 2, name: "MHW INCORPORATED (new)", address: "28 Maria Basa, Pacdal, Baguio City", region: "CAR", city: "Baguio City", contact: "074-3094290/0919-0009188", modality: "Eclectic", type: "NGO", lat: 16.4172, lng: 120.6133, email: "" },
-            { id: 3, name: "DEPARTMENT OF HEALTH-DRUG ABUSE TREATMENT AND REHABILITATION CENTER", address: "Centro, Brgy. San Antonio, Ilagan, Isabela", region: "Region II", city: "Ilagan City", contact: "0908-8134084/0975-2762650/0917-1528202", modality: "Therapeutic Community", type: "GO", lat: 17.15, lng: 121.84, email: "trc_dohro2@yahoo.com.ph" },
+            { id: 3, name: "DOH-DRUG ABUSE TREATMENT AND REHABILITATION CENTER (Isabela)", address: "Centro, Brgy. San Antonio, Ilagan, Isabela", region: "Region II", city: "Ilagan City", contact: "0908-8134084/0975-2762650/0917-1528202", modality: "Therapeutic Community", type: "GO", lat: 17.15, lng: 121.84, email: "trc_dohro2@yahoo.com.ph" },
             { id: 4, name: "DOH-TREATMENT AND REHABILITATION CENTER BATAAN", address: "Batangas III, Brgy. Liyang, Pilar, Bataan", region: "Region III", city: "Pilar", contact: "0999-5190930", modality: "Therapeutic Community", type: "GO", lat: 14.68, lng: 120.57, email: "" },
-            { id: 5, name: "Cebu Recovery Home (Mock)", address: "Cebu City, Cebu (Private)", region: "Region VII", city: "Cebu City", contact: "(032) 231-7000", modality: "Hazelden-Minnesota", type: "Private", lat: 10.3157, lng: 123.8854, email: "ceburecovery@example.com" },
-            { id: 6, name: "Mindanao Hope Center (Mock)", address: "Davao City, Davao del Sur (Private)", region: "Region XI", city: "Davao City", contact: "(082) 221-9000", modality: "Spiritual Approach", type: "Private", lat: 7.0722, lng: 125.6131, email: "mindanaohope@example.com" },
-            { id: 7, name: "DOH-TRC Tagaytay (Mock)", address: "Tagaytay City, Cavite", region: "Region IV-A", city: "Tagaytay City", contact: "(046) 413-0282", modality: "Multidisciplinary", type: "GO", lat: 14.1030, lng: 120.9388, email: "" },
+            { id: 5, name: "Cebu Recovery Home", address: "Cebu City, Cebu (Mock Private)", region: "Region VII", city: "Cebu City", contact: "(032) 231-7000", modality: "Hazelden-Minnesota", type: "Private", lat: 10.3157, lng: 123.8854, email: "ceburecovery@example.com" },
+            { id: 6, name: "Mindanao Hope Center", address: "Davao City, Davao del Sur (Mock Private)", region: "Region XI", city: "Davao City", contact: "(082) 221-9000", modality: "Spiritual Approach", type: "Private", lat: 7.0722, lng: 125.6131, email: "mindanaohope@example.com" },
+            { id: 7, name: "DOH-TRC Tagaytay", address: "Tagaytay City, Cavite", region: "Region IV-A", city: "Tagaytay City", contact: "(046) 413-0282", modality: "Multidisciplinary", type: "GO", lat: 14.1030, lng: 120.9388, email: "" },
         ];
 
         // --- Enhanced Substance Abuse Vulnerability Screening (e-SAVS) Questions ---
@@ -91,8 +92,10 @@
         // --- Firebase Initialization and Authentication ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
+        // setLogLevel('debug'); // Uncomment to see Firebase logs
+
         let db, auth, currentUserId = null;
         let isAuthReady = false;
 
@@ -100,6 +103,13 @@
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
+        function updateFooterStatus(status) {
+            const footerElement = document.getElementById('auth-status');
+            if (footerElement) {
+                footerElement.textContent = status;
+            }
+        }
+
         try {
             if (Object.keys(firebaseConfig).length > 0) {
                 const app = initializeApp(firebaseConfig);
@@ -109,30 +119,35 @@
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUserId = user.uid;
+                        updateFooterStatus(`Ready (User ID: ${currentUserId.substring(0, 8)}...)`);
                     } else {
-                        // This handles the case if custom token fails or is missing
-                        signInAnonymously(auth).then(anonUser => {
-                             currentUserId = anonUser.user.uid;
-                        });
+                        // This fallback should rarely run if custom token is provided
+                        updateFooterStatus('Authentication Error or Anonymous Sign-in Required');
                     }
                     isAuthReady = true;
                     // Initial rendering after auth is ready
-                    if(document.readyState === 'complete') renderPage(window.activeTab);
+                    if(document.readyState === 'complete') renderPage(window.activeTab || 'Home');
                 });
 
                 if (initialAuthToken) {
-                    signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Firebase Custom Auth Error, falling back to anonymous:", e));
+                    signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                        console.error("Firebase Custom Auth Error, falling back to anonymous:", e);
+                        signInAnonymously(auth).catch(e => console.error("Firebase Anonymous Auth Error:", e));
+                    });
                 } else if (!auth.currentUser) {
                     signInAnonymously(auth).catch(e => console.error("Firebase Anonymous Auth Error:", e));
                 }
+                updateFooterStatus('Initializing...');
             } else {
                 console.warn("Firebase config is missing. App will run without persistent storage.");
                 isAuthReady = true;
                 currentUserId = 'anonymous-' + Math.random().toString(36).substring(2, 9);
-                if(document.readyState === 'complete') renderPage(window.activeTab);
+                updateFooterStatus('Ready (No Persistence)');
+                if(document.readyState === 'complete') renderPage(window.activeTab || 'Home');
             }
         } catch (error) {
             console.error("Failed to initialize Firebase:", error);
+            updateFooterStatus('Initialization Failed');
         }
         
         // --- State Management ---
@@ -151,10 +166,22 @@
 
 
         // --- Utility Functions ---
+        // Expose critical functions to the global scope for inline HTML event handlers
+        window.setActiveTab = setActiveTab;
+        window.toggleMenu = toggleMenu;
+        window.handleSavsAnswer = handleSavsAnswer;
+        window.submitSavsResult = submitSavsResult;
+        window.resetScreening = resetScreening;
+        window.updateMarkers = updateMarkers;
+        
         function setIcon(element, name, className = 'w-5 h-5') {
             element.innerHTML = lucide.createIcons()[name].toSvg({ class: className });
         }
 
+        /**
+         * Core function to change the active tab and re-render the page content.
+         * All major navigation buttons call this function.
+         */
         function setActiveTab(tab) {
             window.activeTab = tab;
             window.isMenuOpen = false;
@@ -166,6 +193,12 @@
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileMenu) {
                 mobileMenu.classList.toggle('hidden', !window.isMenuOpen);
+            }
+            // Force re-rendering of the header to update the icon
+            const appHeader = document.getElementById('app-header');
+            if (appHeader) {
+                appHeader.innerHTML = renderHeader();
+                lucide.createIcons(); // Re-render icons
             }
         }
 
@@ -190,6 +223,9 @@
             }
         }
 
+        /**
+         * Handles the selection of an answer, stores it, and advances to the next step.
+         */
         async function handleSavsAnswer(questionId, optionIndex) {
             const question = E_SAVS_QUESTIONS.find(q => q.id === questionId);
             if (!question) return;
@@ -206,6 +242,9 @@
             renderPage('Screening');
         }
         
+        /**
+         * Calculates the final score and attempts to save the result to Firestore.
+         */
         async function submitSavsResult() {
             if (!db || !currentUserId || window.isSubmitting) return;
 
@@ -223,19 +262,23 @@
             };
 
             try {
-                const collectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/screenings`);
-                await addDoc(collectionRef, screeningData);
-                console.log("Screening result saved successfully.");
+                // Private data path: /artifacts/{appId}/users/{userId}/screenings
+                const collectionPath = `artifacts/${appId}/users/${currentUserId}/screenings`;
+                await addDoc(collection(db, collectionPath), screeningData);
+                console.log("Screening result saved successfully to:", collectionPath);
                 window.savsStep = E_SAVS_QUESTIONS.length + 1; // Show result page
             } catch (error) {
                 console.error("Error saving screening result to Firestore:", error);
-                window.savsStep = E_SAVS_QUESTIONS.length + 1;
+                window.savsStep = E_SAVS_QUESTIONS.length + 1; // Show result page even if save fails
             } finally {
                 window.isSubmitting = false;
                 renderPage('Screening');
             }
         }
         
+        /**
+         * Resets the screening state to start over.
+         */
         function resetScreening() {
             window.savsAnswers = {};
             window.savsStep = 0;
@@ -344,6 +387,10 @@
                 const bounds = new google.maps.LatLngBounds();
                 filteredRehabs.forEach(center => bounds.extend({ lat: center.lat, lng: center.lng }));
                 window.mapInstance.fitBounds(bounds);
+            } else if (window.mapInstance) {
+                // If no results, center the map on the Philippines
+                window.mapInstance.setCenter({ lat: 12.8797, lng: 121.7740 });
+                window.mapInstance.setZoom(6);
             }
         }
         
@@ -354,6 +401,7 @@
             }
             const script = document.createElement('script');
             script.id = 'google-maps-script';
+            // The callback function initializeMap is essential for the script to load correctly
             script.src = `https://maps.googleapis.com/maps/api/js?key=${GMAPS_API_KEY}&callback=initializeMap&libraries=places`;
             script.async = true;
             script.defer = true;
@@ -372,20 +420,43 @@
                                 <h1 class="text-xl font-extrabold heading-font">${APP_NAME}</h1>
                             </div>
                             <nav class="hidden md:flex space-x-4">
-                                ${['Home', 'Screening', 'Locator', 'Support'].map(name => `
-                                    <button
-                                        onclick="setActiveTab('${name}')"
-                                        class="px-3 py-2 rounded-md text-sm font-medium transition duration-150 heading-font ${window.activeTab === name ? 'text-white shadow-inner' : 'text-gray-200 hover:text-white'}"
-                                        style="background-color: ${window.activeTab === name ? BRAND_SECONDARY_COLOR : 'transparent'};"
-                                    >
-                                        <span class="inline-block align-middle mr-1" data-lucide="${name === 'Home' ? 'home' : name === 'Screening' ? 'file-text' : name === 'Locator' ? 'map-pin' : 'headset'}"></span>
-                                        ${name}
-                                    </button>
-                                `).join('')}
+                                ${['Home', 'Screening', 'Locator', 'Support'].map(name => {
+                                    const isActive = window.activeTab === name;
+                                    const buttonClasses = `px-3 py-2 rounded-md text-sm font-medium transition duration-150 heading-font ${isActive ? 'text-white shadow-inner' : 'text-gray-200 hover:text-white'}`;
+                                    const buttonStyle = `background-color: ${isActive ? BRAND_SECONDARY_COLOR : 'transparent'};`;
+                                    const icon = name === 'Home' ? 'home' : name === 'Screening' ? 'file-text' : name === 'Locator' ? 'map-pin' : 'headset';
+            
+                                    if (name === 'Home') {
+                                        // RENDER HOME AS EXTERNAL LINK
+                                        return `
+                                            <a
+                                                href="${HOME_EXTERNAL_LINK}"
+                                                target="_blank"
+                                                class="${buttonClasses}"
+                                                style="${buttonStyle}"
+                                            >
+                                                <span class="inline-block align-middle mr-1" data-lucide="${icon}"></span>
+                                                ${name}
+                                            </a>
+                                        `;
+                                    } else {
+                                        // RENDER OTHER TABS AS INTERNAL BUTTONS
+                                        return `
+                                            <button
+                                                onclick="window.setActiveTab('${name}')"
+                                                class="${buttonClasses}"
+                                                style="${buttonStyle}"
+                                            >
+                                                <span class="inline-block align-middle mr-1" data-lucide="${icon}"></span>
+                                                ${name}
+                                            </button>
+                                        `;
+                                    }
+                                }).join('')}
                             </nav>
                             <div class="md:hidden">
                                 <button
-                                    onclick="toggleMenu()"
+                                    onclick="window.toggleMenu()"
                                     class="inline-flex items-center justify-center p-2 rounded-md text-white hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white transition duration-150 ease-in-out"
                                 >
                                     <span data-lucide="${window.isMenuOpen ? 'x' : 'menu'}" class="h-6 w-6"></span>
@@ -396,16 +467,39 @@
                     <!-- Mobile Menu Dropdown -->
                     <div id="mobile-menu" class="md:hidden ${window.isMenuOpen ? '' : 'hidden'}">
                         <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3" style="background-color: ${BRAND_PRIMARY_COLOR};">
-                            ${['Home', 'Screening', 'Locator', 'Support'].map(name => `
-                                <button
-                                    onclick="setActiveTab('${name}')"
-                                    class="block w-full text-left px-3 py-2 rounded-md text-base font-medium transition duration-150 heading-font ${window.activeTab === name ? 'text-white' : 'text-gray-200 hover:text-white'}"
-                                    style="background-color: ${window.activeTab === name ? BRAND_SECONDARY_COLOR : 'transparent'};"
-                                >
-                                    <span class="inline-block align-middle mr-2" data-lucide="${name === 'Home' ? 'home' : name === 'Screening' ? 'file-text' : name === 'Locator' ? 'map-pin' : 'headset'}"></span>
-                                    ${name}
-                                </button>
-                            `).join('')}
+                            ${['Home', 'Screening', 'Locator', 'Support'].map(name => {
+                                const isActive = window.activeTab === name;
+                                const itemClasses = `block w-full text-left px-3 py-2 rounded-md text-base font-medium transition duration-150 heading-font ${isActive ? 'text-white' : 'text-gray-200 hover:text-white'}`;
+                                const itemStyle = `background-color: ${isActive ? BRAND_SECONDARY_COLOR : 'transparent'};`;
+                                const icon = name === 'Home' ? 'home' : name === 'Screening' ? 'file-text' : name === 'Locator' ? 'map-pin' : 'headset';
+                                
+                                if (name === 'Home') {
+                                    // RENDER HOME AS EXTERNAL LINK
+                                    return `
+                                        <a
+                                            href="${HOME_EXTERNAL_LINK}"
+                                            target="_blank"
+                                            class="${itemClasses} flex items-center"
+                                            style="${itemStyle}"
+                                        >
+                                            <span class="inline-block align-middle mr-2" data-lucide="${icon}"></span>
+                                            ${name}
+                                        </a>
+                                    `;
+                                } else {
+                                    // RENDER OTHER TABS AS INTERNAL BUTTONS
+                                    return `
+                                        <button
+                                            onclick="window.setActiveTab('${name}')"
+                                            class="${itemClasses}"
+                                            style="${itemStyle}"
+                                        >
+                                            <span class="inline-block align-middle mr-2" data-lucide="${icon}"></span>
+                                            ${name}
+                                        </button>
+                                    `;
+                                }
+                            }).join('')}
                             <p class="text-xs p-2 truncate" style="color: #DDD;">User ID: ${currentUserId || 'Loading...'}</p>
                         </div>
                     </div>
@@ -436,7 +530,7 @@
                                     <p class="text-sm text-gray-500 mb-4">${card.description}</p>
                                 </div>
                                 <button
-                                    onclick="setActiveTab('${card.tab}')"
+                                    onclick="window.setActiveTab('${card.tab}')"
                                     class="text-white font-bold py-2 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 mt-4 heading-font"
                                     style="background-color: ${BRAND_SECONDARY_COLOR};"
                                 >
@@ -473,7 +567,7 @@
                             <p class="text-sm text-gray-600">Your results are stored securely using your unique, anonymous User ID: <span class="font-mono text-xs bg-gray-200 p-1 rounded">${currentUserId || 'Loading...'}</span></p>
                         </div>
                         <button
-                            onclick="window.savsStep = 1; renderPage('Screening')"
+                            onclick="window.savsStep = 1; window.renderPage('Screening')"
                             class="w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition duration-300 shadow-lg heading-font"
                             style="background-color: ${BRAND_SECONDARY_COLOR};"
                         >
@@ -493,6 +587,7 @@
                         <h3 class="text-xl font-semibold text-gray-700 heading-font">
                             Question ${window.savsStep} of ${E_SAVS_QUESTIONS.length}
                         </h3>
+                        <!-- Progress bar value is dynamically set based on the current step -->
                         <progress class="w-full h-2 rounded-full overflow-hidden bg-gray-200" value="${window.savsStep - 1}" max="${E_SAVS_QUESTIONS.length}"></progress>
 
                         <p class="text-2xl font-bold text-gray-800 mb-6 heading-font">${question.text}</p>
@@ -502,7 +597,7 @@
                                 const isSelected = window.savsAnswers[question.id] && window.savsAnswers[question.id].answer === option;
                                 return `
                                     <button
-                                        onclick="handleSavsAnswer(${question.id}, ${index})"
+                                        onclick="window.handleSavsAnswer(${question.id}, ${index})"
                                         class="w-full text-left p-4 rounded-lg border-2 hover:opacity-90 transition duration-200 ${isSelected ? 'font-semibold border-4' : 'border-gray-300'}"
                                         style="${isSelected ? `border-color: ${BRAND_PRIMARY_COLOR}; background-color: #F8F3FA; color: ${BRAND_PRIMARY_COLOR};` : ''}"
                                     >
@@ -513,8 +608,9 @@
                         </div>
 
                         ${window.savsStep === E_SAVS_QUESTIONS.length && answered ? `
+                            <!-- Finish button wired to submitSavsResult() -->
                             <button
-                                onclick="submitSavsResult()"
+                                onclick="window.submitSavsResult()"
                                 ${window.isSubmitting ? 'disabled' : ''}
                                 class="w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition duration-300 shadow-lg disabled:opacity-50 mt-8 heading-font"
                                 style="background-color: ${BRAND_SECONDARY_COLOR};"
@@ -538,8 +634,9 @@
                     <div class="p-6 space-y-4 border-l-4 rounded-md" style="border-color: ${BRAND_PRIMARY_COLOR}; background-color: #F8F3FA;">
                         <h3 class="text-2xl font-bold heading-font" style="color: ${BRAND_PRIMARY_COLOR};">Risk Assessment: <span class="${result.color}">${result.level}</span></h3>
                         <p class="text-gray-700">${result.guidance}</p>
+                        <!-- Button wired to switch to Locator tab -->
                         <button
-                            onclick="setActiveTab('Locator')"
+                            onclick="window.setActiveTab('Locator')"
                             class="text-white font-bold py-2 px-4 rounded-lg hover:opacity-90 transition duration-300 mt-4 flex items-center heading-font"
                             style="background-color: ${BRAND_SECONDARY_COLOR};"
                         >
@@ -554,8 +651,9 @@
                         <li>Review the Support tab for legal petition procedures if compulsory confinement is considered.</li>
                     </ul>
 
+                    <!-- Button wired to resetScreening() -->
                     <button
-                        onclick="resetScreening()"
+                        onclick="window.resetScreening()"
                         class="text-gray-500 hover:text-gray-700 transition duration-300 mt-4 text-sm"
                     >
                         Retake Screening
@@ -579,11 +677,10 @@
             }
             
             const renderFilters = () => {
-                const SelectFilter = (value, onChange, options, defaultLabel) => {
-                    const optionsHtml = options.map(o => `<option value="${o}">${o}</option>`).join('');
+                const SelectFilter = (value, options, defaultLabel) => {
                     return `
                         <select
-                            onchange="window.${value} = this.value; renderPage('Locator');"
+                            onchange="window.${value} = this.value; window.renderPage('Locator');"
                             class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-4 focus:ring-opacity-50 w-full"
                             style="--tw-ring-color: ${BRAND_PRIMARY_COLOR};"
                         >
@@ -595,17 +692,19 @@
 
                 return `
                     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Input wired to update searchTerm and re-render Locator -->
                         <input
                             type="text"
                             placeholder="Search by Name, City, or Region..."
                             class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-4 focus:ring-opacity-50 col-span-full lg:col-span-1"
                             style="--tw-ring-color: ${BRAND_PRIMARY_COLOR};"
                             value="${window.searchTerm}"
-                            oninput="window.searchTerm = this.value; renderPage('Locator');"
+                            oninput="window.searchTerm = this.value; window.renderPage('Locator');"
                         />
-                        ${SelectFilter('filterRegion', 'setFilterRegion', uniqueRegions, 'Filter by Region')}
-                        ${SelectFilter('filterModality', 'setFilterModality', uniqueModalities, 'Filter by Modality')}
-                        ${SelectFilter('filterType', 'setFilterType', uniqueTypes, 'Filter by Type')}
+                        <!-- Selects wired to update filter state and re-render Locator -->
+                        ${SelectFilter('filterRegion', uniqueRegions, 'Filter by Region')}
+                        ${SelectFilter('filterModality', uniqueModalities, 'Filter by Modality')}
+                        ${SelectFilter('filterType', uniqueTypes, 'Filter by Type')}
                     </div>
                 `;
             };
@@ -644,6 +743,7 @@
                                 <div class="pt-4 mt-4 border-t border-gray-200 space-y-2 text-sm">
                                     <div class="flex justify-between text-gray-700">
                                         <span class="font-semibold flex items-center"><span data-lucide="phone" class="h-4 w-4 mr-1"></span> Contact:</span>
+                                        <!-- Phone link wired via href="tel:..." -->
                                         <a href="tel:${center.contact.replace(/\D/g, '')}" class="hover:underline font-bold" style="color: ${BRAND_SECONDARY_COLOR};">${center.contact}</a>
                                     </div>
                                     <div class="flex justify-between text-gray-700">
@@ -653,6 +753,7 @@
                                     ${center.email ? `
                                         <div class="flex justify-between text-gray-700">
                                             <span class="font-semibold flex items-center"><span data-lucide="mail" class="h-4 w-4 mr-1"></span> Email:</span>
+                                            <!-- Email link wired via href="mailto:..." -->
                                             <a href="mailto:${center.email}" class="hover:underline font-bold text-blue-500">${center.email}</a>
                                         </div>
                                     ` : ''}
@@ -669,7 +770,6 @@
         }
 
         function renderSupportPage() {
-            // Reusing the structure and content from the provided SupportPage.html
             return `
                 <div class="p-6 space-y-6 bg-white shadow-xl rounded-lg">
                     <h2 class="text-3xl font-bold heading-font" style="color: #E53E3E;">Emergency, Crisis, & Treatment Petition Support</h2>
@@ -686,6 +786,7 @@
                                 <span data-lucide="${card.icon}" class="h-8 w-8 text-gray-700 mr-4 flex-shrink-0"></span>
                                 <div>
                                     <h3 class="text-xl font-bold text-gray-800 heading-font">${card.title}</h3>
+                                    <!-- Crisis Hotline links wired via href="tel:..." -->
                                     <a href="tel:${card.number.replace(/\D/g, '')}" class="text-2xl font-extrabold text-red-600 hover:text-red-800 transition duration-150">${card.number}</a>
                                     <p class="text-sm text-gray-600 mt-1">${card.description}</p>
                                 </div>
@@ -712,7 +813,7 @@
                            <p class="text-sm text-gray-500 mt-2 text-center">Source: Dangerous Drugs Board (DDB). Part 1 of 2.</p>
                         </div>
                         
-                         <!-- DDB Procedure Image 2 (Newly requested) -->
+                         <!-- DDB Procedure Image 2 -->
                         <div class="flex justify-center items-center p-4 bg-gray-100 rounded-xl shadow-inner mb-6">
                            <img 
                               src="${PROCEDURES_IMAGE_URL_2}" 
@@ -724,7 +825,7 @@
                         </div>
 
                         <h3 class="text-xl font-medium text-gray-800 mb-3 mt-6 heading-font">Need Personalized Support?</h3>
-                        <!-- Online Counseling Button -->
+                        <!-- Online Counseling Button wired via href="tel:..." to an external link -->
                         <a 
                             href="${COUNSELING_LINK}" 
                             target="_blank" 
@@ -752,7 +853,7 @@
 
 
         // --- Main Render Function ---
-        function renderPage(tab) {
+        window.renderPage = function(tab) {
             const appContent = document.getElementById('app-content');
             const appHeader = document.getElementById('app-header');
             
@@ -794,9 +895,8 @@
         // Initial load
         window.onload = () => {
              // Delay initial render slightly to ensure Firebase listener catches auth state
-             // if auth state is not ready, the listener will call renderPage once it is.
              if(isAuthReady) {
-                renderPage(window.activeTab);
+                window.renderPage(window.activeTab || 'Home');
              }
         };
 
@@ -811,10 +911,5 @@
             <div class="text-center p-10 text-gray-500">Loading Kalinga Connect...</div>
         </div>
     </main>
-    
-    <footer class="w-full py-4 text-center text-sm text-gray-500 bg-white border-t">
-        &copy; 2025 Kalinga Connect by Cognitio+. User Status: <span id="auth-status">${isAuthReady ? 'Ready' : 'Initializing...'}</span>.
-    </footer>
-
 </body>
 </html>
