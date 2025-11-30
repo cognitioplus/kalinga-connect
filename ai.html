@@ -29,26 +29,50 @@
     
     <style>
         body {
-            background-color: #f0f4f8; /* Light gray background */
+            /* Full height and light background */
+            background-color: #f0f4f8; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            margin: 0;
         }
+        
+        /* Main container takes up most of the viewport height */
+        #chat-app-container {
+            height: 95vh; /* Take up 95% of viewport height */
+            max-height: 900px; /* Max height for large screens */
+            width: 95%; /* Fluid width */
+            max-width: 900px; /* Maximum width for a pleasant chat experience */
+            margin: auto;
+        }
+
         .chat-message {
             max-width: 80%;
             border-radius: 1.5rem;
             padding: 0.75rem 1rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
         }
+        
+        /* User message styling */
         .user-message {
-            background-color: #e2e8f0; /* Light slate */
-            color: #1e293b; /* Dark text */
+            background-color: #e2e8f0; 
+            color: #1e293b; 
             margin-left: auto;
             border-bottom-right-radius: 0.25rem;
         }
+        
+        /* Bot message styling */
         .bot-message {
             background-color: #b425aa; /* kalinga-primary */
             color: white;
             margin-right: auto;
             border-bottom-left-radius: 0.25rem;
         }
+
         /* Loading animation dots */
         @keyframes dot-flashing {
             0% { opacity: 0.2; }
@@ -68,72 +92,47 @@
         .loading-dot:nth-child(3) { animation-delay: 1s; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
-
-    <!-- Header & Navigation -->
-    <header class="bg-kalinga-primary shadow-xl sticky top-0 z-10">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-            
-            <!-- Logo/Title -->
-            <div class="flex items-center">
-                <img src="https://appimize.app/assets/apps/user_1097/images/b2e254093bca_935_1097.png" alt="Kalinga Connect Logo" class="h-8 w-8 rounded-full mr-2">
-                <h1 class="text-xl font-extrabold text-white">Kalinga Connect</h1>
-            </div>
-
-            <!-- Navigation Links -->
-            <nav class="flex space-x-4">
-                <!-- HOME LINK -->
-                <a href="index.html" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
-                    Home
-                </a>
-                <!-- LOCATOR LINK -->
-                <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
-                    Locator
-                </a>
-                <!-- SUPPORT is active -->
-                <a href="support.html" class="nav-button text-kalinga-gold hover:text-white font-semibold transition duration-150">
-                    Support
-                </a>
-            </nav>
-        </div>
-    </header>
+<body>
 
     <!-- Main Content Area - Support View (Kalinga AI Chatbot) -->
-    <main class="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 flex justify-center items-stretch">
-        <div id="view-support" class="h-[80vh] min-h-[500px] w-full max-w-3xl">
-            <div class="bg-white rounded-xl shadow-2xl flex flex-col h-full">
-                
-                <!-- Chat Header -->
-                <div class="p-4 bg-kalinga-primary rounded-t-xl flex items-center justify-center">
-                    <h2 class="text-xl font-bold text-white">Kalinga AI Chat</h2>
-                    <!-- Framework Tag -->
-                    <span class="text-kalinga-gold text-sm ml-3 border border-kalinga-gold px-2 py-0.5 rounded-full">CBT & Behavior Design Expert</span>
-                </div>
-                
-                <!-- Chat Window -->
-                <div id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-4">
-                    <!-- Initial Bot Message -->
-                    <div class="flex">
-                        <div class="bot-message text-sm">
-                            Hello! I'm Kalinga AI Chat, an empathetic coach ready to support your recovery journey using techniques from CBT, NLP, and Behavior Design. What's on your mind today?
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Input Area -->
-                <div class="p-4 border-t border-gray-200 flex space-x-3">
-                    <input type="text" id="chat-input" placeholder="Ask for coping strategies or share your thoughts..."
-                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-kalinga-accent focus:border-kalinga-accent transition duration-150"
-                        onkeypress="if(event.key === 'Enter') sendMessage()">
-                    <button id="send-button" onclick="sendMessage()"
-                        class="px-5 py-2 bg-kalinga-accent text-white font-semibold rounded-lg shadow-md hover:bg-kalinga-primary transition duration-300 disabled:opacity-50"
-                        disabled>
-                        Send
-                    </button>
+    <div id="chat-app-container" class="bg-white rounded-xl shadow-2xl flex flex-col">
+        
+        <!-- Chat Header (Fixed at the top of the chat area) -->
+        <div class="p-4 bg-kalinga-primary rounded-t-xl flex items-center justify-between">
+            <div class="flex items-center">
+                <h2 class="text-xl font-bold text-white">Kalinga AI Chat</h2>
+                <!-- Framework Tag -->
+                <span class="text-kalinga-gold text-xs ml-3 border border-kalinga-gold px-2 py-0.5 rounded-full font-semibold">CBT & Behavior Design Expert</span>
+            </div>
+            <!-- Back button (for navigation back to index.html) -->
+            <a href="index.html" class="text-white hover:text-kalinga-gold transition duration-150 flex items-center text-sm font-medium">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Home
+            </a>
+        </div>
+        
+        <!-- Chat Window (Scrollable area) -->
+        <div id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-4">
+            <!-- Initial Bot Message -->
+            <div class="flex">
+                <div class="bot-message text-sm">
+                    Hello! I'm Kalinga AI Chat, an empathetic coach ready to support your recovery journey using techniques from CBT, NLP, and Behavior Design. What's on your mind today?
                 </div>
             </div>
         </div>
-    </main>
+
+        <!-- Input Area (Fixed at the bottom) -->
+        <div class="p-4 border-t border-gray-200 flex space-x-3">
+            <input type="text" id="chat-input" placeholder="Ask for coping strategies or share your thoughts..."
+                class="flex-grow p-3 border border-gray-300 rounded-xl focus:ring-kalinga-accent focus:border-kalinga-accent transition duration-150 shadow-inner"
+                onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button id="send-button" onclick="sendMessage()"
+                class="px-5 py-2 bg-kalinga-accent text-white font-bold rounded-xl shadow-md hover:bg-kalinga-primary transition duration-300 disabled:opacity-50"
+                disabled>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </div>
+    </div>
 
     <!-- Chat Logic (Self-contained in this file) -->
     <script>
@@ -148,9 +147,9 @@
         // --- START OF AI CHAT SYSTEM PROMPT (CBT, NLP, Behavior Design) ---
         const systemPrompt = `You are Kalinga AI Chat, a supportive, highly empathetic, and professional mental health coach specializing in Substance Use Recovery, operating within the Kalinga Connect PWA. Your expertise covers the Philippine context.
 Your responses must be informed by these advanced behavioral frameworks:
-1. **Cognitive Behavioral Therapy (CBT):** Focus on identifying, examining, and challenging negative or unhelpful thought patterns (cognitions). Use gentle, Socratic questioning to guide the user towards alternative, balanced perspectives. (e.g., "What evidence supports that feeling?", "What's an alternative, kinder way to view this situation?").
+1. **Cognitive Behavioral Therapy (CBT):** Focus on identifying, examining, and challenging negative or unhelpful thought patterns (cognitions). Use gentle, Socratic questioning to guide the user towards alternative, balanced perspectives. [Image of Cognitive Behavioral Therapy (CBT) triangle diagram showing thoughts, feelings, and behaviors] (e.g., "What evidence supports that feeling?", "What's an alternative, kinder way to view this situation?").
 2. **Neuro-Linguistic Programming (NLP):** Use empowering, solution-focused language. Help users re-frame challenges into positive goals and acknowledge their internal resources for change.
-3. **Behavior Design Model (Tiny Habits/Fogg):** Encourage users to focus on small, specific, and manageable steps. Responses should guide the user to identify "Tiny Habits" that can be easily started and consistently maintained to build long-term success. (e.g., "What is the smallest, easiest step you can take right now to move forward?").
+3. **Behavior Design Model (Tiny Habits/Fogg):** Encourage users to focus on small, specific, and manageable steps. Responses should guide the user to identify "Tiny Habits" that can be easily started and consistently maintained to build long-term success. (e.g., "What is the smallest, easiest step you can take right now to move forward?"). 
 
 **CRITICAL SAFETY WARNING:** **DO NOT** provide medical diagnosis, emergency services, or psychiatric treatment. For any mention of crisis, self-harm, or immediate danger, you MUST issue a strong safety notice recommending immediate, in-person help and providing a mock emergency number (e.g., 911 or a local crisis hotline like the DOH-NCMH Crisis Hotline 1553).
 
@@ -315,6 +314,8 @@ For all other issues, keep responses empathetic, action-oriented, focused on rec
         script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
         document.head.appendChild(script);
 
+        // --- Initial Load Check ---
+        document.addEventListener('DOMContentLoaded', checkInput);
     </script>
 </body>
 </html>
