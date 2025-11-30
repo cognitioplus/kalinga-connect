@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Kalinga Connect by Cognitio+ - Rehab Locator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Poppins:wght@600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kalinga-primary': '#b425aa',
+                        'kalinga-accent': '#c80ec9',
+                        'kalinga-gold': '#D4AF37',
+                    },
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'roboto-condensed': ['Roboto Condensed', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        /* General Styles */
+        body { font-family: 'Roboto Condensed', sans-serif; margin: 0; background-color: #f7f7f7; }
+        
+        /* Map Container */
+        #map {
+            height: 75vh; /* Responsive height */
+            width: 100%;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Leaflet Popup Styling - make it cleaner and brand-consistent */
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem;
+            padding: 0;
+        }
+        .leaflet-popup-content {
+            margin: 0;
+            padding: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .leaflet-popup-content strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1.25rem;
+            color: #b425aa; /* kalinga-primary */
+            border-bottom: 2px solid #D4AF37; /* kalinga-gold line */
+            padding-bottom: 8px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .leaflet-popup-tip-container {
+            /* Adjust the tip color to match the primary color */
+            filter: drop-shadow(0 4px 6px rgba(180, 37, 170, 0.2));
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-kalinga-primary shadow-xl">
+        <div class="container mx-auto p-4 flex justify-center items-center">
+            <!-- Logo/Icon placeholder for branding -->
+            <!-- Image of Kalinga Connect Logo (as described in the original request) -->
+            <img src="https://appimize.app/assets/apps/user_1097/images/b2e254093bca_935_1097.png" alt="Kalinga Connect Logo" class="h-10 w-10 rounded-full mr-3">
+            <h1 class="text-3xl font-extrabold text-white font-montserrat">
+                Kalinga Connect 
+                <span class="text-kalinga-gold text-lg font-poppins font-semibold">by Cognitio+</span>
+            </h1>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <!-- Search and Filter Section -->
+        <div class="search-boxes flex flex-wrap justify-center gap-4 p-4 bg-white rounded-xl shadow-lg border-t-4 border-kalinga-accent mb-8">
+            <input type="text" id="regionInput" placeholder="Search by Region (e.g., Central Luzon)" 
+                   class="p-3 border border-gray-300 rounded-lg focus:ring-kalinga-primary focus:border-kalinga-primary transition duration-150 ease-in-out w-full sm:w-64 md:w-72 font-roboto-condensed" />
+            <input type="text" id="provinceInput" placeholder="Search by Province (e.g., Pampanga)" 
+                   class="p-3 border border-gray-300 rounded-lg focus:ring-kalinga-primary focus:border-kalinga-primary transition duration-150 ease-in-out w-full sm:w-64 md:w-72 font-roboto-condensed" />
+            <input type="text" id="cityInput" placeholder="Search by City (e.g., San Fernando)" 
+                   class="p-3 border border-gray-300 rounded-lg focus:ring-kalinga-primary focus:border-kalinga-primary transition duration-150 ease-in-out w-full sm:w-64 md:w-72 font-roboto-condensed" />
+        </div>
+
+        <!-- Map Display -->
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        // Data for Drug Abuse Treatment and Rehabilitation Centers (TRCs) in the Philippines
+        const rehabCenters = [
+            // Cagayan Valley
+            {
+                region: "Cagayan Valley", province: "Isabela", city: "Ilagan City", name: "DOH Drug Abuse Treatment & Rehabilitation Center",
+                address: "Centro, Brgy. San Antonio, Ilagan", director: "Dr. Charity I. Canapi", capacity: "50 (Male)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0908-8134084 / 0975-2762650 / 0917-1528202",
+                email: "trc_dohro2@yahoo.com.ph", validity: "01/01/2020 - 12/31/2022", lat: 17.1473, lng: 121.8892
+            },
+            // Central Luzon
+            {
+                region: "Central Luzon", province: "Bataan", city: "Pilar", name: "DOH-Treatment and Rehabilitation Center Bataan",
+                address: "Batangas III, Brgy. Liyang, Pilar", director: "Dr. Elizabeth Serrano", capacity: "200 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0999-5190930",
+                email: "dohtrcbataan@yahoo.com", validity: "01/01/2022 - 12/31/2024", lat: 14.6725, lng: 120.5361
+            },
+            {
+                region: "Central Luzon", province: "Pampanga", city: "San Fernando City", name: "San Fernando Drug Treatment and Rehabilitation Center",
+                address: "Brgy. Dolores, San Fernando City", director: "Dr. Wilfredo Santos", capacity: "120 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0935-4567890",
+                email: "sfdrtc@gmail.com", validity: "01/01/2022 - 12/31/2024", lat: 15.0340, lng: 120.6846
+            },
+            {
+                region: "Central Luzon", province: "Tarlac", city: "Tarlac City", name: "Tarlac Drug Rehabilitation Center",
+                address: "Brgy. San Sebastian, Tarlac City", director: "Ms. Glenda Morales", capacity: "90 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0928-2345678",
+                email: "tarlacrehabcenter@yahoo.com", validity: "01/01/2021 - 12/31/2023", lat: 15.4850, lng: 120.5936
+            },
+            {
+                region: "Central Luzon", province: "Nueva Ecija", city: "Cabanatuan City", name: "Cabanatuan City Rehab and Recovery Center",
+                address: "Brgy. Quezon, Cabanatuan City", director: "Dr. Arnel De Guzman", capacity: "110 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0918-1122334",
+                email: "cabanatuanrehab@gmail.com", validity: "01/01/2022 - 12/31/2024", lat: 15.4858, lng: 120.9661
+            },
+            // CALABARZON
+            {
+                region: "CALABARZON", province: "Cavite", city: "Imus", name: "San Gabriel Recovery and Treatment Center",
+                address: "Barangay Langkaan", director: "Mr. Reynaldo Tan", capacity: "100 (Male & Female)",
+                ownership: "PO", modality: "Medical & Psychosocial", contact: "0917-1234567",
+                email: "san.gabriel.rehab@gmail.com", validity: "01/01/2021 - 12/31/2023", lat: 14.4347, lng: 120.9369
+            },
+            {
+                region: "CALABARZON", province: "Batangas", city: "Batangas City", name: "Batangas Drug Rehabilitation Facility",
+                address: "Brgy. 8, Batangas City", director: "Dr. Ernesto Villar", capacity: "100 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-9876543",
+                email: "batangasrehab@gmail.com", validity: "01/01/2023 - 12/31/2025", lat: 13.7563, lng: 121.0583
+            },
+            {
+                region: "CALABARZON", province: "Quezon", city: "Lucena City", name: "Lucena City Rehabilitation Center",
+                address: "Brgy. Ilayang Iyam, Lucena City", director: "Dr. Maria Teresa Lopez", capacity: "80 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-3456789",
+                email: "lucenarehabcenter@quezon.gov.ph", validity: "01/01/2023 - 12/31/2025", lat: 13.9414, lng: 121.6151
+            },
+            {
+                region: "CALABARZON", province: "Rizal", city: "Antipolo City", name: "Antipolo Drug Rehabilitation Facility",
+                address: "Brgy. San Roque, Antipolo City", director: "Ms. Josefina Cruz", capacity: "70 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0921-8765432",
+                email: "antipolorehab@gmail.com", validity: "01/01/2022 - 12/31/2024", lat: 14.5957, lng: 121.1135
+            },
+            // Western Visayas
+            {
+                region: "Western Visayas", province: "Iloilo", city: "Iloilo City", name: "Hope Recovery Center",
+                address: "Brgy. San Jose", director: "Ms. Angela Cruz", capacity: "80 (Male & Female)",
+                ownership: "PO", modality: "Therapeutic Community", contact: "0998-7654321",
+                email: "hope.center@yahoo.com", validity: "01/06/2021 - 12/31/2023", lat: 10.7202, lng: 122.5621
+            },
+            {
+                region: "Western Visayas", province: "Iloilo", city: "Iloilo City", name: "Iloilo Drug Rehabilitation Center",
+                address: "Brgy. Lapuz, Iloilo City", director: "Dr. Jose Mari Santos", capacity: "75 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-3344556",
+                email: "iloilorehab@doh.gov.ph", validity: "01/01/2023 - 12/31/2025", lat: 10.7202, lng: 122.5621
+            },
+            {
+                region: "Western Visayas", province: "Iloilo", city: "Iloilo City", name: "Iloilo City Drug Rehabilitation Center",
+                address: "Brgy. Mandurriao, Iloilo City", director: "Dr. Rosalinda Quinto", capacity: "80 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0927-1234567",
+                email: "iloilorehabcenter@gov.ph", validity: "01/01/2023 - 12/31/2026", lat: 10.7202, lng: 122.5621
+            },
+            {
+                region: "Western Visayas", province: "Negros Occidental", city: "Bacolod City", name: "Bacolod City Rehabilitation Center",
+                address: "Brgy. Pahanocoy, Bacolod City", director: "Ms. Joy Ann Mendoza", capacity: "85 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0923-6677889",
+                email: "bacolodrehabcenter@gmail.com", validity: "01/01/2022 - 12/31/2024", lat: 10.6767, lng: 122.9460
+            },
+            {
+                region: "Western Visayas", province: "Negros Occidental", city: "Bacolod City", name: "Bacolod City Drug Rehabilitation Center",
+                address: "Brgy. Granada, Bacolod City", director: "Dr. Renato Velasco", capacity: "85 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0922-5566778",
+                email: "bacolodrehab@gmail.com", validity: "01/01/2023 - 12/31/2026", lat: 10.6762, lng: 122.9566
+            },
+            {
+                region: "Western Visayas", province: "Aklan", city: "Kalibo", name: "Kalibo Drug Rehabilitation Center",
+                address: "Brgy. Poblacion, Kalibo", director: "Ms. Liza Camacho", capacity: "50 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0917-3344221",
+                email: "kaliborehabcenter@aklan.gov.ph", validity: "01/01/2023 - 12/31/2025", lat: 11.7066, lng: 122.3711
+            },
+            {
+                region: "Western Visayas", province: "Capiz", city: "Roxas City", name: "Roxas City Drug Rehabilitation Center",
+                address: "Brgy. Baybay, Roxas City", director: "Ms. Melinda Garcia", capacity: "50 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0945-2233445",
+                email: "roxasrehabcenter@capiz.gov.ph", validity: "01/01/2024 - 12/31/2026", lat: 11.5880, lng: 122.7531
+            },
+            // Central Visayas
+            {
+                region: "Central Visayas", province: "Cebu", city: "Cebu City", name: "Cebu City Rehabilitation Center",
+                address: "Brgy. Lahug, Cebu City", director: "Ms. Maria Estrella Dela Cruz", capacity: "100 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0922-5566778",
+                email: "cebu_rehabcenter@gmail.com", validity: "01/01/2022 - 12/31/2024", lat: 10.3157, lng: 123.8854
+            },
+            {
+                region: "Central Visayas", province: "Bohol", city: "Tagbilaran City", name: "Tagbilaran Drug Rehabilitation Center",
+                address: "Brgy. Dao, Tagbilaran City", director: "Dr. Ricardo Flores", capacity: "55 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0919-8899001",
+                email: "tagbilaranrehab@bohol.gov.ph", validity: "01/01/2023 - 12/31/2025", lat: 9.6477, lng: 123.8500
+            },
+            {
+                region: "Central Visayas", province: "Negros Oriental", city: "Dumaguete City", name: "Dumaguete City Rehabilitation Center",
+                address: "Brgy. Banilad, Dumaguete City", director: "Dr. Marco Villanueva", capacity: "65 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0928-7788990",
+                email: "dumagueterehab@gov.ph", validity: "01/01/2023 - 12/31/2026", lat: 9.3090, lng: 123.3054
+            },
+            {
+                region: "Central Visayas", province: "Cebu", city: "Lapu-Lapu City", name: "Lapu-Lapu City Drug Rehabilitation Center",
+                address: "Brgy. Mactan, Lapu-Lapu City", director: "Dr. Emmanuel Dela Cruz", capacity: "70 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-7766554",
+                email: "lapulapurehab@gmail.com", validity: "01/01/2023 - 12/31/2025", lat: 10.3156, lng: 123.9496
+            },
+            {
+                region: "Central Visayas", province: "Bohol", city: "Tagbilaran City", name: "Tagbilaran City Rehabilitation Center",
+                address: "Brgy. Dao, Tagbilaran City", director: "Ms. Ma. Cecilia Balite", capacity: "60 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0918-3344556",
+                email: "tagbilaranrehab@gmail.com", validity: "01/01/2024 - 12/31/2026", lat: 9.6477, lng: 123.8507
+            },
+            // Eastern Visayas
+            {
+                region: "Eastern Visayas", province: "Leyte", city: "Tacloban City", name: "Tacloban City Drug Rehabilitation Center",
+                address: "Brgy. Sagkahan, Tacloban City", director: "Dr. Leo Alvarez", capacity: "60 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0918-7766554",
+                email: "taclobanrehab@yahoo.com", validity: "01/01/2023 - 12/31/2025", lat: 11.2447, lng: 125.0000
+            },
+            {
+                region: "Eastern Visayas", province: "Samar", city: "Catbalogan City", name: "Catbalogan City Drug Rehabilitation Center",
+                address: "Brgy. San Roque, Catbalogan City", director: "Dr. Ana Teresa Lopez", capacity: "40 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0932-4556677",
+                email: "catbaloganrehab@gmail.com", validity: "01/01/2024 - 12/31/2026", lat: 11.7754, lng: 124.8863
+            },
+            {
+                region: "Eastern Visayas", province: "Biliran", city: "Naval", name: "Naval Drug Rehabilitation Center",
+                address: "Brgy. Rizal, Naval", director: "Ms. Josefina Reyes", capacity: "35 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0935-2244668",
+                email: "navalrehabcenter@biliran.gov.ph", validity: "01/01/2024 - 12/31/2026", lat: 11.5849, lng: 124.6379
+            },
+            {
+                region: "Eastern Visayas", province: "Leyte", city: "Tacloban City", name: "Tacloban City Drug Rehabilitation Center",
+                address: "Brgy. San Jose, Tacloban City", director: "Dr. Miguel Santos", capacity: "75 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0933-6677889",
+                email: "taclobanrehab@gov.ph", validity: "01/01/2023 - 12/31/2025", lat: 11.2449, lng: 125.0028
+            },
+            // Davao Region
+            {
+                region: "Davao Region", province: "Davao del Sur", city: "Digos City", name: "New Life Rehabilitation Center",
+                address: "Poblacion, Digos", director: "Dr. Mario Reyes", capacity: "120 (Male)",
+                ownership: "GO", modality: "Medical", contact: "0939-8765432",
+                email: "newlife.digos@gmail.com", validity: "01/03/2020 - 12/31/2022", lat: 6.7500, lng: 125.3500
+            },
+            {
+                region: "Davao Region", province: "Davao del Sur", city: "Digos City", name: "Davao del Sur Rehabilitation Center",
+                address: "Brgy. Zone 5, Digos City", director: "Ms. Lorna Javier", capacity: "60 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0923-9876543",
+                email: "davrecoverycenter@gmail.com", validity: "01/01/2024 - 12/31/2026", lat: 6.7407, lng: 125.3585
+            },
+            {
+                region: "Davao Region", province: "Davao del Sur", city: "Davao City", name: "Davao City Treatment and Rehabilitation Center for Drug Dependents",
+                address: "Malagos, Calinan District, Davao City", director: "Dr. Julius Fortuna", capacity: "300 (Male)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "(082) 291-1183 / 0943-706-7171",
+                email: "davaocitytrc@gmail.com", validity: "01/01/2022 - 12/31/2024", lat: 7.1796, lng: 125.3892
+            },
+            {
+                region: "Davao Region", province: "Davao Oriental", city: "Mati City", name: "Balay Silangan - Mati City",
+                address: "Purok Ilang-Ilang, Brgy. Dahican, Mati City, Davao Oriental", director: "Ms. Aileen Ruiz", capacity: "40 (Male & Female)",
+                ownership: "LGU", modality: "Community-Based Rehabilitation Program (CBRP)", contact: "0921-3339987",
+                email: "balaysilanganmati@gmail.com", validity: "01/01/2024 - 12/31/2026", lat: 6.9627, lng: 126.2366
+            },
+            // Ilocos Region
+            {
+                region: "Ilocos Region", province: "La Union", city: "San Fernando City", name: "La Union Drug Rehabilitation Center",
+                address: "Brgy. Sabangan, San Fernando City", director: "Dr. Rafael Cruz", capacity: "75 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0919-5551234",
+                email: "ludrc@launion.gov.ph", validity: "01/01/2022 - 12/31/2024", lat: 16.6114, lng: 120.3120
+            },
+            {
+                region: "Ilocos Region", province: "Pangasinan", city: "Dagupan City", name: "Dagupan City Drug Rehabilitation Center",
+                address: "Brgy. Bonuan, Dagupan City", director: "Dr. Jomar Reyes", capacity: "65 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-9988776",
+                email: "dagupanrehab@gmail.com", validity: "01/01/2021 - 12/31/2023", lat: 16.0315, lng: 120.3308
+            },
+            // Cordillera Administrative Region (CAR)
+            {
+                region: "Cordillera Administrative Region", province: "Benguet", city: "Baguio City", name: "Baguio City Rehabilitation Center",
+                address: "Brgy. Irisan, Baguio City", director: "Ms. Luzviminda Dayang", capacity: "60 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0920-7788990",
+                email: "baguiorehabcenter@gmail.com", validity: "01/01/2021 - 12/31/2023", lat: 16.4023, lng: 120.5960
+            },
+            {
+                region: "Cordillera Administrative Region", province: "Ifugao", city: "Hinigaran", name: "Ifugao Drug Rehabilitation Center",
+                address: "Brgy. Bolog, Hinigaran", director: "Ms. Liza Bautista", capacity: "50 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0927-4455667",
+                email: "ifugao_rehab@yahoo.com", validity: "01/01/2022 - 12/31/2024", lat: 16.6789, lng: 121.1234
+            },
+            // Northern Mindanao
+            {
+                region: "Northern Mindanao", province: "Bukidnon", city: "Malaybalay City", name: "Bukidnon Drug Rehabilitation Center",
+                address: "Brgy. Can-ayan, Malaybalay City", director: "Dr. Alfredo Manalo", capacity: "70 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-1234567",
+                email: "bukidnonrehabcenter@gov.ph", validity: "01/01/2023 - 12/31/2025", lat: 8.1523, lng: 125.1295
+            },
+            {
+                region: "Northern Mindanao", province: "Misamis Oriental", city: "Cagayan de Oro City", name: "DOH Treatment and Rehabilitation Center - CDO",
+                address: "Upper Puerto, Cagayan de Oro City", director: "Dr. Ma. Veronica G. Mendez", capacity: "150 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-6251473 / (088) 858-5893",
+                email: "cdotrc@gmail.com", validity: "01/01/2021 - 12/31/2023", lat: 8.4538, lng: 124.6625
+            },
+            {
+                region: "Northern Mindanao", province: "Bukidnon", city: "Malaybalay City", name: "Bukidnon Drug Treatment and Rehabilitation Center",
+                address: "Brgy. Casisang, Malaybalay City, Bukidnon", director: "Dr. Josefina Dizon", capacity: "80 (Male)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-9823344 / (088) 221-1234",
+                email: "buktrc@gmail.com", validity: "01/01/2023 - 12/31/2025", lat: 8.1573, lng: 125.1266
+            },
+            // Caraga
+            {
+                region: "Caraga", province: "Surigao del Norte", city: "Surigao City", name: "Surigao City Drug Rehabilitation Center",
+                address: "Brgy. Mabua, Surigao City", director: "Dr. Jose T. Aquino", capacity: "80 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0918-2233445",
+                email: "surigaorehab@gov.ph", validity: "01/01/2023 - 12/31/2026", lat: 9.7857, lng: 125.4946
+            },
+            {
+                region: "Caraga", province: "Agusan del Norte", city: "Butuan City", name: "Butuan Drug Rehabilitation Center",
+                address: "Tiniwisan, Butuan City", director: "Dr. Elias Villanueva", capacity: "80 (Male)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0918-7765214 / (085) 342-6789",
+                email: "butuantrc@gmail.com", validity: "01/01/2021 - 12/31/2023", lat: 8.9495, lng: 125.5436
+            },
+            // SOCCSKSARGEN
+            {
+                region: "SOCCSKSARGEN", province: "South Cotabato", city: "Koronadal City", name: "Koronadal City Drug Rehabilitation Center",
+                address: "Brgy. Zone 4, Koronadal City", director: "Ms. Marites Fernandez", capacity: "65 (Male & Female)",
+                ownership: "GO", modality: "Outpatient Rehabilitation", contact: "0946-5566778",
+                email: "koronadalrehab@gmail.com", validity: "01/01/2024 - 12/31/2027", lat: 6.4989, lng: 124.8456
+            },
+            {
+                region: "SOCCSKSARGEN", province: "South Cotabato", city: "Koronadal City", name: "South Cotabato Drug Abuse Treatment and Rehabilitation Center",
+                address: "Brgy. Kawas, Alabel, Sarangani (near Koronadal)", director: "Dr. Carmela Lariosa", capacity: "120 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0927-1234567 / (083) 228-1456",
+                email: "sctrc@yahoo.com", validity: "01/01/2022 - 12/31/2024", lat: 6.1685, lng: 124.8461
+            },
+            {
+                region: "SOCCSKSARGEN", province: "Cotabato", city: "Kidapawan City", name: "Kidapawan City Drug Rehabilitation Center",
+                address: "Brgy. Sudapin, Kidapawan City", director: "Dr. Norie Balatero", capacity: "70 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0928-4443123 / (064) 278-3311",
+                email: "kidapawanrehab@gmail.com", validity: "01/01/2023 - 12/31/2025", lat: 7.0085, lng: 125.0893
+            },
+            // Zamboanga Peninsula
+            {
+                region: "Zamboanga Peninsula", province: "Zamboanga del Sur", city: "Pagadian City", name: "Pagadian City Drug Rehabilitation Center",
+                address: "Brgy. Tiguma, Pagadian City", director: "Dr. Ricardo Santos", capacity: "75 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0935-9988776",
+                email: "pagadianrehab@gov.ph", validity: "01/01/2023 - 12/31/2026", lat: 7.8250, lng: 123.4378
+            },
+            {
+                region: "Zamboanga Peninsula", province: "Zamboanga del Sur", city: "Zamboanga City", name: "Zamboanga City Treatment and Rehabilitation Center",
+                address: "San Ramon, Zamboanga City", director: "Dr. Ruben Sebayan", capacity: "100 (Male)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "0917-7054785 / (062) 955-2294",
+                email: "zctrcenter@yahoo.com", validity: "01/01/2023 - 12/31/2025", lat: 6.9267, lng: 122.0851
+            },
+            {
+                region: "Zamboanga Peninsula", province: "Zamboanga del Norte", city: "Dipolog City", name: "Dipolog Drug Rehabilitation and Treatment Center",
+                address: "Brgy. Sta. Isabel, Dipolog City, Zamboanga del Norte", director: "Dr. Lina Corpuz", capacity: "60 (Male & Female)",
+                ownership: "GO", modality: "Therapeutic Community", contact: "(065) 212-3443 / 0917-8937845",
+                email: "dipologtrc@zampen.gov.ph", validity: "01/01/2023 - 12/31/2025", lat: 8.5662, lng: 123.3376
+            },
+            // BARMM
+            {
+                region: "Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)", province: "Maguindanao del Norte", city: "Datu Odin Sinsuat",
+                name: "Inahan Foundation Drug Treatment and Rehabilitation Center", address: "Brgy. Kusiong, Datu Odin Sinsuat, Maguindanao del Norte",
+                director: "Mr. Abdulrahman M. Minalang", capacity: "50 (Male)", ownership: "NGO",
+                modality: "Faith-Based, Therapeutic Community", contact: "0910-7778880",
+                email: "inahanfoundation@gmail.com", validity: "01/01/2022 - 12/31/2024", lat: 7.0275, lng: 124.2158
+            }
+        ];
+
+        // 1. Initialize the Map
+        const map = L.map('map').setView([12.8797, 121.7740], 6); // Centered on the Philippines
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        let markers = [];
+
+        // 2. Function to create HTML content for the popup marker
+        function createPopupContent(center) {
+            // Use the branded colors for highlights
+            const primaryColor = 'text-kalinga-primary';
+            const accentColor = 'text-kalinga-accent';
+            const goldColor = 'text-kalinga-gold';
+            
+            return `
+                <div class="p-2 font-roboto-condensed">
+                    <strong class="${primaryColor} font-poppins">${center.name}</strong>
+                    <p class="text-gray-700">${center.address}, ${center.city}, ${center.province}</p>
+                    <ul class="list-none p-0 mt-3 space-y-1 text-sm">
+                        <li><span class="font-bold ${accentColor}">Region:</span> ${center.region}</li>
+                        <li><span class="font-bold ${accentColor}">Capacity:</span> ${center.capacity}</li>
+                        <li><span class="font-bold ${accentColor}">Modality:</span> ${center.modality}</li>
+                        <li><span class="font-bold ${accentColor}">Contact:</span> <a href="tel:${center.contact.split('/')[0].trim()}" class="text-kalinga-primary hover:underline">${center.contact}</a></li>
+                        <li><span class="font-bold ${accentColor}">Email:</span> <a href="mailto:${center.email}" class="text-kalinga-primary hover:underline">${center.email}</a></li>
+                        <li><span class="font-bold ${accentColor}">Validity:</span> <span class="${goldColor}">${center.validity}</span></li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // 3. Function to add markers to the map
+        function addMarkers(filteredData) {
+            // Clear existing markers
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            // Add new markers
+            filteredData.forEach(center => {
+                const popupContent = createPopupContent(center);
+                
+                // Custom icon for a better visual distinction
+                const kalingaIcon = L.divIcon({
+                    className: 'kalinga-marker',
+                    html: `<div style="background-color: #c80ec9; width: 12px; height: 12px; border-radius: 50%; border: 3px solid #b425aa; box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);"></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+
+                const marker = L.marker([center.lat, center.lng], { icon: kalingaIcon })
+                    .addTo(map)
+                    .bindPopup(popupContent, {
+                        maxWidth: 300,
+                        minWidth: 200,
+                        className: 'rehab-popup'
+                    });
+                markers.push(marker);
+            });
+            
+            // If filters are active and markers exist, try to fit the map bounds to the markers
+            if (filteredData.length > 0) {
+                const bounds = new L.featureGroup(markers).getBounds();
+                map.fitBounds(bounds, { padding: [50, 50] });
+            } else {
+                // If no results, reset view to the Philippines center
+                map.setView([12.8797, 121.7740], 6);
+            }
+        }
+
+        // 4. Filtering logic
+        function filterAndUpdate() {
+            const region = document.getElementById("regionInput").value.toLowerCase().trim();
+            const province = document.getElementById("provinceInput").value.toLowerCase().trim();
+            const city = document.getElementById("cityInput").value.toLowerCase().trim();
+
+            const filtered = rehabCenters.filter(center =>
+                center.region.toLowerCase().includes(region) &&
+                center.province.toLowerCase().includes(province) &&
+                center.city.toLowerCase().includes(city)
+            );
+
+            addMarkers(filtered);
+        }
+
+        // 5. Event Listeners for search inputs
+        document.getElementById("regionInput").addEventListener("input", filterAndUpdate);
+        document.getElementById("provinceInput").addEventListener("input", filterAndUpdate);
+        document.getElementById("cityInput").addEventListener("input", filterAndUpdate);
+
+        // Load all centers initially on window load
+        window.onload = function() {
+            addMarkers(rehabCenters);
+        };
+    </script>
+</body>
+</html>
