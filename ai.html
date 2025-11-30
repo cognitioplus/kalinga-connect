@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Kalinga AI Chat Support</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'kalinga-primary': '#b425aa',
+                        'kalinga-accent': '#c80ec9',
+                        'kalinga-gold': '#D4AF37',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #f0f4f8; /* Light gray background */
+        }
+        .chat-message {
+            max-width: 80%;
+            border-radius: 1.5rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .user-message {
+            background-color: #e2e8f0; /* Light slate */
+            color: #1e293b; /* Dark text */
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .bot-message {
+            background-color: #b425aa; /* kalinga-primary */
+            color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+        }
+        /* Loading animation dots */
+        @keyframes dot-flashing {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        .loading-dot {
+            animation: dot-flashing 1.5s infinite alternate;
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin: 0 1px;
+            border-radius: 50%;
+            background-color: white;
+        }
+        .loading-dot:nth-child(2) { animation-delay: 0.5s; }
+        .loading-dot:nth-child(3) { animation-delay: 1s; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header & Navigation -->
+    <header class="bg-kalinga-primary shadow-xl sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            
+            <!-- Logo/Title -->
+            <div class="flex items-center">
+                <img src="https://appimize.app/assets/apps/user_1097/images/b2e254093bca_935_1097.png" alt="Kalinga Connect Logo" class="h-8 w-8 rounded-full mr-2">
+                <h1 class="text-xl font-extrabold text-white">Kalinga Connect</h1>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex space-x-4">
+                <!-- HOME LINK -->
+                <a href="index.html" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Home
+                </a>
+                <!-- LOCATOR LINK -->
+                <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Locator
+                </a>
+                <!-- SUPPORT is active -->
+                <a href="support.html" class="nav-button text-kalinga-gold hover:text-white font-semibold transition duration-150">
+                    Support
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area - Support View (Kalinga AI Chatbot) -->
+    <main class="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 flex justify-center items-stretch">
+        <div id="view-support" class="h-[80vh] min-h-[500px] w-full max-w-3xl">
+            <div class="bg-white rounded-xl shadow-2xl flex flex-col h-full">
+                
+                <!-- Chat Header -->
+                <div class="p-4 bg-kalinga-primary rounded-t-xl flex items-center justify-center">
+                    <h2 class="text-xl font-bold text-white">Kalinga AI Chat</h2>
+                    <!-- Framework Tag -->
+                    <span class="text-kalinga-gold text-sm ml-3 border border-kalinga-gold px-2 py-0.5 rounded-full">CBT & Behavior Design Expert</span>
+                </div>
+                
+                <!-- Chat Window -->
+                <div id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-4">
+                    <!-- Initial Bot Message -->
+                    <div class="flex">
+                        <div class="bot-message text-sm">
+                            Hello! I'm Kalinga AI Chat, an empathetic coach ready to support your recovery journey using techniques from CBT, NLP, and Behavior Design. What's on your mind today?
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 border-t border-gray-200 flex space-x-3">
+                    <input type="text" id="chat-input" placeholder="Ask for coping strategies or share your thoughts..."
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-kalinga-accent focus:border-kalinga-accent transition duration-150"
+                        onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button id="send-button" onclick="sendMessage()"
+                        class="px-5 py-2 bg-kalinga-accent text-white font-semibold rounded-lg shadow-md hover:bg-kalinga-primary transition duration-300 disabled:opacity-50"
+                        disabled>
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Chat Logic (Self-contained in this file) -->
+    <script>
+        // --- Chatbot Logic (Gemini API Integration) ---
+        
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const apiKey = ""; // API Key is provided by the environment
+        const modelName = 'gemini-2.5-flash-preview-09-2025';
+
+        // --- START OF AI CHAT SYSTEM PROMPT (CBT, NLP, Behavior Design) ---
+        const systemPrompt = `You are Kalinga AI Chat, a supportive, highly empathetic, and professional mental health coach specializing in Substance Use Recovery, operating within the Kalinga Connect PWA. Your expertise covers the Philippine context.
+Your responses must be informed by these advanced behavioral frameworks:
+1. **Cognitive Behavioral Therapy (CBT):** Focus on identifying, examining, and challenging negative or unhelpful thought patterns (cognitions). Use gentle, Socratic questioning to guide the user towards alternative, balanced perspectives. (e.g., "What evidence supports that feeling?", "What's an alternative, kinder way to view this situation?").
+2. **Neuro-Linguistic Programming (NLP):** Use empowering, solution-focused language. Help users re-frame challenges into positive goals and acknowledge their internal resources for change.
+3. **Behavior Design Model (Tiny Habits/Fogg):** Encourage users to focus on small, specific, and manageable steps. Responses should guide the user to identify "Tiny Habits" that can be easily started and consistently maintained to build long-term success. (e.g., "What is the smallest, easiest step you can take right now to move forward?").
+
+**CRITICAL SAFETY WARNING:** **DO NOT** provide medical diagnosis, emergency services, or psychiatric treatment. For any mention of crisis, self-harm, or immediate danger, you MUST issue a strong safety notice recommending immediate, in-person help and providing a mock emergency number (e.g., 911 or a local crisis hotline like the DOH-NCMH Crisis Hotline 1553).
+
+For all other issues, keep responses empathetic, action-oriented, focused on recovery, well-being, and developing coping skills. Your tone must be warm, encouraging, and non-judgemental.`;
+        // --- END OF AI CHAT SYSTEM PROMPT ---
+
+        /**
+         * Creates a new chat message element.
+         * @param {string} text - The message text.
+         * @param {string} sender - 'user' or 'bot'.
+         */
+        function appendMessage(text, sender) {
+            const messageContainer = document.createElement('div');
+            messageContainer.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `chat-message ${sender}-message ${sender === 'user' ? 'bg-blue-600' : 'bg-kalinga-primary'}`;
+            
+            // Use marked.parse for bot responses (text formatting)
+            if (sender === 'bot' && typeof marked !== 'undefined') {
+                messageBubble.innerHTML = marked.parse(text);
+            } else {
+                messageBubble.textContent = text;
+            }
+            
+            messageContainer.appendChild(messageBubble);
+            chatWindow.appendChild(messageContainer);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return messageBubble;
+        }
+
+        /**
+         * Shows the bot's loading indicator.
+         */
+        function showLoading() {
+            const loadingContainer = document.createElement('div');
+            loadingContainer.className = 'flex justify-start';
+            loadingContainer.id = 'loading-indicator';
+            loadingContainer.innerHTML = `
+                <div class="bot-message bg-kalinga-accent">
+                    <span class="loading-dot"></span>
+                    <span class="loading-dot"></span>
+                    <span class="loading-dot"></span>
+                </div>`;
+            chatWindow.appendChild(loadingContainer);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        /**
+         * Hides the bot's loading indicator.
+         */
+        function hideLoading() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+        }
+
+        /**
+         * The core function to call the Gemini API with exponential backoff.
+         * @param {string} userQuery - The user's input text.
+         * @param {number} retries - Current retry count.
+         */
+        async function callGeminiApi(userQuery, retries = 0) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            const maxRetries = 5;
+            const delay = Math.pow(2, retries) * 1000 + (Math.random() * 1000); // Exponential backoff with jitter
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                tools: [{ "google_search": {} }], // Use Google Search for grounding
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && retries < maxRetries) {
+                        // Rate limit error, retry after delay
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return callGeminiApi(userQuery, retries + 1);
+                    }
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response. Please try again.";
+                
+                // Extract grounding sources (citations)
+                let sourcesHtml = '';
+                const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
+                if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                    const sources = groundingMetadata.groundingAttributions
+                        .map(attr => attr.web)
+                        .filter(web => web && web.uri && web.title);
+
+                    if (sources.length > 0) {
+                        sourcesHtml = '<div class="mt-3 pt-2 border-t border-kalinga-accent text-xs opacity-80">';
+                        sourcesHtml += '<p class="font-bold mb-1">Sources (Grounded Content):</p><ul class="list-disc ml-4">';
+                        sources.slice(0, 3).forEach(source => { // Limit to top 3 sources
+                            sourcesHtml += `<li><a href="${source.uri}" target="_blank" class="hover:underline">${source.title}</a></li>`;
+                        });
+                        sourcesHtml += '</ul></div>';
+                    }
+                }
+
+                return { text, sourcesHtml };
+
+            } catch (error) {
+                if (retries < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return callGeminiApi(userQuery, retries + 1);
+                }
+                console.error("Final API call failure:", error);
+                return { text: "I apologize, an error occurred while connecting to the service. Please check your connection or try again later.", sourcesHtml: '' };
+            }
+        }
+
+        /**
+         * Sends the user message and gets a response from the AI.
+         */
+        window.sendMessage = async function() {
+            const userQuery = chatInput.value.trim();
+            if (!userQuery) return;
+
+            // 1. Display user message and clear input
+            appendMessage(userQuery, 'user');
+            chatInput.value = '';
+            sendButton.disabled = true;
+
+            // 2. Show loading indicator
+            showLoading();
+
+            // 3. Call the API
+            const { text, sourcesHtml } = await callGeminiApi(userQuery);
+
+            // 4. Hide loading and display bot response
+            hideLoading();
+            
+            // Append the response text and sources
+            const botMessageBubble = appendMessage(text, 'bot');
+            botMessageBubble.innerHTML = botMessageBubble.innerHTML + sourcesHtml;
+
+            sendButton.disabled = false;
+        }
+
+        // Input handler to enable/disable send button
+        function checkInput() {
+            sendButton.disabled = chatInput.value.trim() === '';
+        }
+        chatInput.addEventListener('input', checkInput);
+        
+        // --- Markdown Library (marked.js) for Bot Responses ---
+        // Basic marked library setup (for bot text formatting)
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+        document.head.appendChild(script);
+
+    </script>
+</body>
+</html>
