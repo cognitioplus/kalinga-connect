@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Kalinga Connect - Substance Abuse Support</title>
+    <title>Kalinga Connect PWA - Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Tailwind CSS CDN -->
@@ -31,41 +31,6 @@
         body {
             background-color: #f0f4f8; /* Light gray background */
         }
-        .chat-message {
-            max-width: 80%;
-            border-radius: 1.5rem;
-            padding: 0.75rem 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .user-message {
-            background-color: #e2e8f0; /* Light slate */
-            color: #1e293b; /* Dark text */
-            margin-left: auto;
-            border-bottom-right-radius: 0.25rem;
-        }
-        .bot-message {
-            background-color: #b425aa; /* kalinga-primary */
-            color: white;
-            margin-right: auto;
-            border-bottom-left-radius: 0.25rem;
-        }
-        /* Loading animation dots */
-        @keyframes dot-flashing {
-            0% { opacity: 0.2; }
-            20% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
-        .loading-dot {
-            animation: dot-flashing 1.5s infinite alternate;
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            margin: 0 1px;
-            border-radius: 50%;
-            background-color: white;
-        }
-        .loading-dot:nth-child(2) { animation-delay: 0.5s; }
-        .loading-dot:nth-child(3) { animation-delay: 1s; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -82,17 +47,22 @@
 
             <!-- Navigation Links -->
             <nav class="flex space-x-4">
-                <button onclick="navigate('home')" id="nav-home" class="nav-button text-kalinga-gold hover:text-white font-semibold transition duration-150">
+                <!-- Home is active -->
+                <a href="index.html" class="nav-button text-kalinga-gold hover:text-white font-semibold transition duration-150">
                     Home
-                </button>
+                </a>
+                <!-- SCREENING LINK -->
+                <a href="screening.html" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Screening
+                </a>
                 <!-- LOCATOR LINK: Header Navigation -->
                 <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
                     Locator
                 </a>
-                <!-- AI CHAT Button: Calls navigate('') -->
-                <button onclick="navigate('ai-chat')" id="nav-ai-chat" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
-                    Kalinga AI Coach
-                </button>
+                <!-- SUPPORT LINK: Navigates to the separate support.html file -->
+                <a href="support.html" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
+                    Support
+                </a>
             </nav>
         </div>
     </header>
@@ -109,293 +79,113 @@
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                     <!-- LOCATOR LINK: Central Button -->
-                    <a href="https://cognitioplus.aiwaapp.live/kalinga-locator/" target="_blank" class="
+                    <a href="https://cognitioplus.github.io/kalinga-connect/locator.html" target="_blank" class="
                         inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl shadow-lg 
                         text-white bg-kalinga-accent hover:bg-kalinga-primary transition duration-300 transform hover:scale-105
                         focus:outline-none focus:ring-4 focus:ring-kalinga-accent focus:ring-opacity-50">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m10.606-10.606L13.414 3.1a1.998 1.998 0 00-2.828 0l-4.243 4.243m10.606 10.606l4.243-4.243a1.998 1.998 0 000-2.828l-4.243-4.243m-10.606 10.606L3.1 13.414a1.998 1.998 0 010-2.828l4.243-4.243m10.606 10.606a4 4 0 11-5.656-5.656 4 4 0 015.656 5.656z"></path></svg>
-                        Find DOH-Accredited Recovery and Treatment Center
+                        View Accredited Locator
                     </a>
-                    <!-- SUPPORT BUTTON: Calls navigate('support') -->
-                    <button onclick="navigate('support')" class="
+                    <!-- SUPPORT LINK: Central Button navigates to support.html -->
+                    <a href="support.html" class="
                         inline-flex items-center justify-center px-8 py-3 border border-kalinga-primary text-base font-medium rounded-xl shadow-lg 
                         text-kalinga-primary bg-white hover:bg-kalinga-primary hover:text-white transition duration-300 transform hover:scale-105
                         focus:outline-none focus:ring-4 focus:ring-kalinga-primary focus:ring-opacity-50">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9.228a2 2 0 012.828 0l.135.135a.5.5 0 00.354.147H14a1 1 0 011 1v2a1 1 0 01-1 1h-1.583a.5.5 0 00-.354.147l-.135.135a2 2 0 01-2.828 0 2 2 0 010-2.828zM12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
                         Talk to Kalinga AI Chat
-                    </button>
+                    </a>
                 </div>
             </div>
 
             <!-- Recovery Tools Section -->
             <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 
-                <!-- NEW: Substance Abuse Screener -->
-                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-accent">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Substance Abuse Vulnerability Screening Tool</h3>
-                    <p class="text-gray-600">A quick, validated tool to assess potential risk, vulnerability, and guide next steps for support.</p>
-                </div>
-                 <a href="https://cognitioplus.aiwaapp.live/kalinga-screening" target="_blank" class="nav-button text-white hover:text-kalinga-gold font-semibold transition duration-150">
-                <!-- Existing Tools -->
-                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Smart Emotion Tracker</h3>
-                    <p class="text-gray-600">Log your daily mood, triggers, and accomplishments to visualize your recovery journey.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Habit Design Studio</h3>
-                    <p class="text-gray-600">Access the research-backed technique to shape or stop habits such as managing cravings and stress.</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold">
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Well-Be</h3>
-                    <p class="text-gray-600">Measure your stress levels with the power of your smart device's camera.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Support View (Kalinga AI Chatbot) -->
-        <div id="view-support" class="view-content hidden h-full max-w-3xl mx-auto">
-            <div class="bg-white rounded-xl shadow-2xl flex flex-col h-[80vh] min-h-[500px]">
-                
-                <!-- Chat Header -->
-                <div class="p-4 bg-kalinga-primary rounded-t-xl flex items-center justify-center">
-                    <h2 class="text-xl font-bold text-white">Kalinga AI Chat</h2>
-                    <!-- Framework Tag -->
-                    <span class="text-kalinga-gold text-sm ml-3 border border-kalinga-gold px-2 py-0.5 rounded-full">CBT & Behavior Design Expert</span>
-                </div>
-                
-                <!-- Chat Window -->
-                <div id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-4">
-                    <!-- Initial Bot Message -->
-                    <div class="flex">
-                        <div class="bot-message text-sm">
-                            Hello! I'm Kalinga AI Chat, an empathetic coach ready to support your recovery journey using techniques from CBT, NLP, and Behavior Design. What's on your mind today?
-                        </div>
+                <!-- Tool 1: Substance Abuse Vulnerability Screening Tool -->
+                <!-- The link here points to the external tool URL, and the internal content is now structured with the button -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-accent hover:shadow-xl transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 flex items-start">
+                            <svg class="w-6 h-6 flex-shrink-0 mr-2 mt-1 text-kalinga-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002 15c0 4.288 3.238 8.077 7.618 9.043C11.163 24.364 12 24 12 24c4.762-1.071 8.001-4.855 8.001-9.043a12.001 12.001 0 00-2.383-8.043z"></path></svg>
+                            <span>Substance Abuse Vulnerability Screening Tool</span>
+                        </h3>
+                        <p class="text-gray-600 mb-4">A quick, confidential tool to assess potential vulnerability and risk level.</p>
                     </div>
+                    <a href="https://cognitioplus.aiwaapp.live/kalinga-screening" target="_blank" class="text-center py-2 px-4 rounded-lg text-sm font-semibold text-white bg-kalinga-accent hover:bg-kalinga-primary transition duration-300 shadow-md hover:shadow-lg mt-auto">
+                        START THE TOOL
+                    </a>
+                </div>
+                
+                <!-- Tool 2: Smart Emotion Tracker -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold hover:shadow-xl transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 flex items-start">
+                            <svg class="w-6 h-6 flex-shrink-0 mr-2 mt-1 text-kalinga-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v14m-12 5h12m-12 0L9 19m12 3v-3m0-12V3"></path></svg>
+                            <span>Smart Emotion Tracker</span>
+                        </h3>
+                        <p class="text-gray-600 mb-4">Log your daily mood, triggers, and accomplishments to visualize your recovery journey.</p>
+                    </div>
+                    <a href="https://cognitioplus.aiwaapp.live/smart-emotion-tracker" target="_blank" class="text-center py-2 px-4 rounded-lg text-sm font-semibold text-white bg-kalinga-accent hover:bg-kalinga-primary transition duration-300 shadow-md hover:shadow-lg mt-auto">
+                        LOG AND TRACK EMOTIONS
+                    </a>
                 </div>
 
-                <!-- Input Area -->
-                <div class="p-4 border-t border-gray-200 flex space-x-3">
-                    <input type="text" id="chat-input" placeholder="Ask for coping strategies or share your thoughts..."
-                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-kalinga-accent focus:border-kalinga-accent transition duration-150"
-                        onkeypress="if(event.key === 'Enter') sendMessage()">
-                    <button id="send-button" onclick="sendMessage()"
-                        class="px-5 py-2 bg-kalinga-accent text-white font-semibold rounded-lg shadow-md hover:bg-kalinga-primary transition duration-300 disabled:opacity-50"
-                        disabled>
-                        Send
-                    </button>
+                <!-- Tool 3: Habit Design Studio -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold hover:shadow-xl transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 flex items-start">
+                            <svg class="w-6 h-6 flex-shrink-0 mr-2 mt-1 text-kalinga-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            <span>Habit Design Studio</span>
+                        </h3>
+                        <p class="text-gray-600 mb-4">Access research-backed techniques to manage cravings and design resilient habits.</p>
+                    </div>
+                    <a href="https://cognitioplus.aiwaapp.live/habit-design-studio" target="_blank" class="text-center py-2 px-4 rounded-lg text-sm font-semibold text-white bg-kalinga-accent hover:bg-kalinga-primary transition duration-300 shadow-md hover:shadow-lg mt-auto">
+                        DESIGN A HABIT
+                    </a>
+                </div>
+
+                <!-- Tool 4: Well-Be: Measure and Manage Stress -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-kalinga-gold hover:shadow-xl transition duration-300 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 flex items-start">
+                            <svg class="w-6 h-6 flex-shrink-0 mr-2 mt-1 text-kalinga-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span>Well-Be: Measure and Manage Stress</span>
+                        </h3>
+                        <p class="text-gray-600 mb-4">Measure your stress levels with Heart Rate Variability using just your smartphone camera.</p>
+                    </div>
+                    <a href="https://cognitioplus.aiwaapp.live/well-be" target="_blank" class="text-center py-2 px-4 rounded-lg text-sm font-semibold text-white bg-kalinga-accent hover:bg-kalinga-primary transition duration-300 shadow-md hover:shadow-lg mt-auto">
+                        MEASURE STRESS
+                    </a>
                 </div>
             </div>
         </div>
-
     </main>
-
-    <script>
-        // --- Navigation Logic ---
-        let currentView = 'home';
-
-        /**
-         * Switches the active content view.
-         * @param {string} view - 'home' or 'support'
-         */
-        function navigate(view) {
-            currentView = view;
-            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${view}`).classList.remove('hidden');
-
-            // Handle active state in navigation bar
-            document.querySelectorAll('.nav-button').forEach(el => el.classList.remove('text-kalinga-gold'));
-            document.querySelectorAll('.nav-button').forEach(el => el.classList.add('text-white'));
-            if (document.getElementById(`nav-${view}`)) {
-                document.getElementById(`nav-${view}`).classList.add('text-kalinga-gold');
-                document.getElementById(`nav-${view}`).classList.remove('text-white');
-            }
-            // Ensure the chat input state is checked when navigated to
-            if (view === 'support') {
-                checkInput();
-            }
-        }
-
-        // Initialize view to home
-        document.addEventListener('DOMContentLoaded', () => {
-            navigate('home');
-        });
-
-        // --- Chatbot Logic (Gemini API Integration) ---
+    
+    <!-- Firebase Initialization -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        const chatWindow = document.getElementById('chat-window');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
-        const apiKey = ""; // API Key is provided by the environment
-        const modelName = 'gemini-2.5-flash-preview-09-2025';
-
-        // --- START OF AI CHAT SYSTEM PROMPT (CBT, NLP, Behavior Design) ---
-        const systemPrompt = `You are Kalinga AI Chat, a supportive, highly empathetic, and professional mental health coach specializing in Substance Use Recovery, operating within the Kalinga Connect PWA. Your expertise covers the Philippine context.
-Your responses must be informed by these advanced behavioral frameworks:
-1. **Cognitive Behavioral Therapy (CBT):** Focus on identifying, examining, and challenging negative or unhelpful thought patterns (cognitions). Use gentle, Socratic questioning to guide the user towards alternative, balanced perspectives. (e.g., "What evidence supports that feeling?", "What's an alternative, kinder way to view this situation?").
-2. **Neuro-Linguistic Programming (NLP):** Use empowering, solution-focused language. Help users re-frame challenges into positive goals and acknowledge their internal resources for change.
-3. **Behavior Design Model (Tiny Habits/Fogg):** Encourage users to focus on small, specific, and manageable steps. Responses should guide the user to identify "Tiny Habits" that can be easily started and consistently maintained to build long-term success. (e.g., "What is the smallest, easiest step you can take right now to move forward?").
-
-**CRITICAL SAFETY WARNING:** **DO NOT** provide medical diagnosis, emergency services, or psychiatric treatment. For any mention of crisis, self-harm, or immediate danger, you MUST issue a strong safety notice recommending immediate, in-person help and providing a mock emergency number (e.g., 911 or a local crisis hotline).
-
-For all other issues, keep responses empathetic, action-oriented, focused on recovery, well-being, and developing coping skills. Your tone must be warm, encouraging, and non-judgemental.`;
-        // --- END OF AI CHAT SYSTEM PROMPT ---
-
-        /**
-         * Creates a new chat message element.
-         * @param {string} text - The message text.
-         * @param {string} sender - 'user' or 'bot'.
-         */
-        function appendMessage(text, sender) {
-            const messageContainer = document.createElement('div');
-            messageContainer.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
-
-            const messageBubble = document.createElement('div');
-            messageBubble.className = `chat-message ${sender}-message text-white ${sender === 'user' ? 'bg-blue-600' : 'bg-kalinga-primary'}`;
-            // Use marked.js for bot responses (text formatting)
-            messageBubble.innerHTML = sender === 'bot' ? marked.parse(text) : text;
-            
-            messageContainer.appendChild(messageBubble);
-            chatWindow.appendChild(messageContainer);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-            return messageBubble;
-        }
-
-        /**
-         * Shows the bot's loading indicator.
-         * @returns {HTMLElement} The loading indicator element.
-         */
-        function showLoading() {
-            const loadingContainer = document.createElement('div');
-            loadingContainer.className = 'flex justify-start';
-            loadingContainer.id = 'loading-indicator';
-            loadingContainer.innerHTML = `
-                <div class="bot-message bg-kalinga-accent">
-                    <span class="loading-dot"></span>
-                    <span class="loading-dot"></span>
-                    <span class="loading-dot"></span>
-                </div>`;
-            chatWindow.appendChild(loadingContainer);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-            return loadingContainer;
-        }
-
-        /**
-         * Hides the bot's loading indicator.
-         */
-        function hideLoading() {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            if (loadingIndicator) {
-                loadingIndicator.remove();
-            }
-        }
-
-        /**
-         * The core function to call the Gemini API with exponential backoff.
-         * @param {number} retries - Current retry count.
-         */
-        async function callGeminiApi(userQuery, retries = 0) {
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
-            const maxRetries = 5;
-            const delay = Math.pow(2, retries) * 1000 + (Math.random() * 1000); // Exponential backoff with jitter
-
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                tools: [{ "google_search": {} }], // Use Google Search for grounding and up-to-date info
-            };
-
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        if (Object.keys(firebaseConfig).length > 0) {
             try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    if (response.status === 429 && retries < maxRetries) {
-                        // Rate limit error, retry after delay
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        return callGeminiApi(userQuery, retries + 1);
-                    }
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
-
-                const result = await response.json();
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
                 
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't generate a response. Please try again.";
-                
-                // Extract grounding sources (citations)
-                let sourcesHtml = '';
-                const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
-                if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                    const sources = groundingMetadata.groundingAttributions
-                        .map(attr => attr.web)
-                        .filter(web => web && web.uri && web.title);
-
-                    if (sources.length > 0) {
-                        sourcesHtml = '<div class="mt-3 pt-2 border-t border-kalinga-accent text-xs opacity-80">';
-                        sourcesHtml += '<p class="font-bold mb-1">Sources:</p><ul class="list-disc ml-4">';
-                        sources.slice(0, 3).forEach(source => { // Limit to top 3 sources
-                            sourcesHtml += `<li><a href="${source.uri}" target="_blank" class="hover:underline">${source.title}</a></li>`;
-                        });
-                        sourcesHtml += '</ul></div>';
-                    }
+                // Sign in logic
+                if (initialAuthToken) {
+                    signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Firebase Custom Auth Error:", e));
+                } else {
+                    signInAnonymously(auth).catch(e => console.error("Firebase Anonymous Auth Error:", e));
                 }
-
-                return { text, sourcesHtml };
-
             } catch (error) {
-                if (retries < maxRetries) {
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    return callGeminiApi(userQuery, retries + 1);
-                }
-                console.error("Final API call failure:", error);
-                return { text: "I apologize, an error occurred while connecting to the service. Please check your connection or try again later.", sourcesHtml: '' };
+                console.error("Failed to initialize Firebase:", error);
             }
+        } else {
+            console.warn("Firebase config is missing.");
         }
-
-        /**
-         * Sends the user message and gets a response from the AI.
-         */
-        async function sendMessage() {
-            const userQuery = chatInput.value.trim();
-            if (!userQuery) return;
-
-            // 1. Display user message and clear input
-            appendMessage(userQuery, 'user');
-            chatInput.value = '';
-            sendButton.disabled = true;
-
-            // 2. Show loading indicator
-            const loadingIndicator = showLoading();
-
-            // 3. Call the API
-            const { text, sourcesHtml } = await callGeminiApi(userQuery);
-
-            // 4. Hide loading and display bot response
-            hideLoading(loadingIndicator);
-            
-            // Append the response text and sources
-            const botMessageBubble = appendMessage(text, 'bot');
-            botMessageBubble.innerHTML = botMessageBubble.innerHTML + sourcesHtml;
-
-            sendButton.disabled = false;
-        }
-
-        // Input handler to enable/disable send button
-        function checkInput() {
-            if (currentView === 'support') {
-                sendButton.disabled = chatInput.value.trim() === '';
-            }
-        }
-        chatInput.addEventListener('input', checkInput);
-
-        // --- Markdown Library (marked.js) for Bot Responses ---
-        // Basic marked library setup (for bot text formatting)
-        const script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
-        document.head.appendChild(script);
-
     </script>
 </body>
 </html>
